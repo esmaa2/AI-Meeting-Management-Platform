@@ -1,0 +1,2650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MeetlyAI — AI Productivity Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Angular 21 via CDN (zone.js + framework) -->
+<script src="https://cdn.jsdelivr.net/npm/zone.js@0.14.10/dist/zone.min.js"></script>
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{
+      extend:{
+        colors:{
+          "on-tertiary-container":"#73664e","error-container":"#ffdad6","on-tertiary-fixed":"#231a08",
+          "surface-tint":"#5c5d6e","surface-container-highest":"#e5e1e3","on-secondary-container":"#58665b",
+          "secondary-fixed":"#d8e6d8","on-secondary":"#ffffff","surface-container-high":"#ebe7e8",
+          "inverse-primary":"#c5c5d8","surface-variant":"#e5e1e3","on-primary":"#ffffff",
+          "outline-variant":"#c7c5cc","on-surface":"#1c1b1c","on-error":"#ffffff",
+          "inverse-surface":"#313031","secondary-container":"#d5e4d5","inverse-on-surface":"#f3f0f1",
+          "surface-container-lowest":"#ffffff","primary-fixed":"#e1e1f5","primary-container":"#e6e6fa",
+          "surface-dim":"#dcd9da","surface-container-low":"#f6f3f4","surface":"#fcf8fa",
+          "on-primary-fixed-variant":"#444655","background":"#fcf8fa","secondary":"#546256",
+          "primary":"#5c5d6e","on-background":"#1c1b1c","secondary-fixed-dim":"#bccabc",
+          "on-primary-fixed":"#191b29","tertiary-fixed":"#f1e1c2","on-primary-container":"#656677",
+          "on-error-container":"#93000a","on-tertiary-fixed-variant":"#50462f","surface-bright":"#fcf8fa",
+          "primary-fixed-dim":"#c5c5d8","on-surface-variant":"#46464c","tertiary-container":"#f7e6c7",
+          "on-secondary-fixed-variant":"#3d4a3f","surface-container":"#f1edee","tertiary-fixed-dim":"#d5c5a7",
+          "tertiary":"#695d45","outline":"#77767d","on-secondary-fixed":"#121e15","on-tertiary":"#ffffff","error":"#ba1a1a"
+        },
+        borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+        spacing:{"xl":"48px","margin-safe":"40px","lg":"32px","xs":"8px","md":"20px","base":"4px","sm":"12px","gutter":"24px"},
+        fontFamily:{"label-caps":["Inter"],"h3":["Manrope"],"h1":["Manrope"],"body-lg":["Inter"],"body-md":["Inter"],"h2":["Manrope"],"body-sm":["Inter"],"manrope":["Manrope"]},
+        fontSize:{
+          "label-caps":["12px",{lineHeight:"1",letterSpacing:"0.05em",fontWeight:"600"}],
+          "h3":["24px",{lineHeight:"1.4",letterSpacing:"0",fontWeight:"600"}],
+          "h1":["40px",{lineHeight:"1.2",letterSpacing:"-0.02em",fontWeight:"700"}],
+          "body-lg":["18px",{lineHeight:"1.6",fontWeight:"400"}],
+          "body-md":["16px",{lineHeight:"1.5",fontWeight:"400"}],
+          "h2":["32px",{lineHeight:"1.3",letterSpacing:"-0.01em",fontWeight:"600"}],
+          "body-sm":["14px",{lineHeight:"1.5",fontWeight:"400"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  *{scroll-behavior:smooth}
+  body{background-color:#fcf8fa;color:#1c1b1c;font-family:'Inter',sans-serif;margin:0}
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .custom-shadow{box-shadow:0px 4px 12px rgba(0,0,0,0.05)}
+  .level-1-shadow{box-shadow:0px 4px 12px rgba(0,0,0,0.05)}
+  .glass-card{background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0px 4px 12px rgba(0,0,0,0.05)}
+
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+  @keyframes growWidth{from{width:0}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+  .page-enter{animation:fadeInUp 0.4s ease both}
+  .anim-fade-in{animation:fadeIn 0.4s ease both}
+  .anim-fade-up{animation:fadeInUp 0.45s ease both}
+  .anim-slide-left{animation:slideInLeft 0.4s ease both}
+  .anim-scale-in{animation:scaleIn 0.35s ease both}
+  .animate-grow{animation:growWidth 1s ease 0.5s both}
+  .badge-pulse{animation:pulse 2s infinite}
+
+  .delay-1{animation-delay:0.05s}.delay-2{animation-delay:0.10s}.delay-3{animation-delay:0.15s}
+  .delay-4{animation-delay:0.20s}.delay-5{animation-delay:0.25s}.delay-6{animation-delay:0.30s}
+  .delay-7{animation-delay:0.35s}.delay-8{animation-delay:0.40s}
+
+  .kanban-card{transition:transform 0.2s ease,box-shadow 0.2s ease}
+  .kanban-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#c7c5cc;border-radius:3px}
+
+  .toggle-input:checked+.toggle-track{background-color:#5c5d6e}
+  .toggle-input:checked+.toggle-track .toggle-thumb{transform:translateX(20px)}
+  .toggle-track{background-color:#c7c5cc;transition:background-color 0.2s;width:44px;height:24px;border-radius:9999px;position:relative;cursor:pointer}
+  .toggle-thumb{position:absolute;top:2px;left:2px;width:20px;height:20px;background:white;border-radius:9999px;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+
+  .nav-link{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:8px;transition:all 0.15s;font-family:'Manrope',sans-serif;font-size:14px;font-weight:500;color:#475569;text-decoration:none;cursor:pointer}
+  .nav-link:hover{background:#f1f5f9;color:#4338ca}
+  .nav-link.active{background:#eef0fb;color:#4338ca}
+
+  .progress-bar{transition:width 1s ease}
+
+  /* Notification toast */
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1c1b1c;color:white;padding:12px 20px;border-radius:12px;font-size:14px;z-index:9999;transition:transform 0.3s ease,opacity 0.3s ease;opacity:0;pointer-events:none}
+  #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ========== APP ROOT ========== -->
+<div id="app-root">
+
+<!-- ===== AUTH PAGES (Login / Signup) ===== -->
+<div id="auth-section">
+
+  <!-- LOGIN PAGE -->
+  <div id="page-login" class="auth-wrapper anim-fade-in" style="display:none">
+    <header class="bg-[#FAFAFA] border-b border-slate-100 shadow-sm fixed top-0 w-full z-50">
+      <div class="flex items-center justify-between px-8 h-16 max-w-[1200px] mx-auto">
+        <div class="flex items-center gap-8">
+          <span class="text-xl font-bold text-slate-900 tracking-tight font-manrope">MeetlyAI</span>
+          <nav class="hidden md:flex gap-6">
+            <a class="font-manrope text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#" onclick="showToast('Features coming soon!')">Features</a>
+            <a class="font-manrope text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#" onclick="showToast('Pricing info coming soon!')">Pricing</a>
+            <a class="font-manrope text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#" onclick="showToast('Help center coming soon!')">Help</a>
+          </nav>
+        </div>
+        <button onclick="navigateTo('signup')" class="bg-primary-container text-on-primary-container px-6 py-2 rounded-lg font-manrope text-sm font-medium hover:brightness-95 transition-all active:scale-95">Sign Up</button>
+      </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center px-gutter pt-16 pb-lg flex-1 min-h-screen">
+      <div class="w-full max-w-[440px] mt-lg">
+        <div class="text-center mb-lg anim-fade-up">
+          <h1 class="font-h1 text-h1 text-on-surface mb-xs">Welcome back</h1>
+          <p class="font-body-md text-body-md text-outline">Focus on your ideas, we'll handle the notes.</p>
+        </div>
+        <div class="level-1-shadow bg-surface-container-lowest rounded-xl p-lg space-y-md anim-fade-up delay-2">
+          <div class="space-y-xs">
+            <label class="font-label-caps text-label-caps text-outline block" for="login-email">Email Address</label>
+            <input id="login-email" class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all duration-200" placeholder="name@company.com" type="email" value="sarah@MeetlyAI.ai"/>
+          </div>
+          <div class="space-y-xs">
+            <div class="flex justify-between items-center">
+              <label class="font-label-caps text-label-caps text-outline block" for="login-pass">Password</label>
+              <a class="font-label-caps text-label-caps text-primary hover:opacity-80 cursor-pointer" onclick="showToast('Password reset email sent!')">Forgot Password?</a>
+            </div>
+            <div class="relative">
+              <input id="login-pass" class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all duration-200" placeholder="••••••••" type="password" value="••••••••"/>
+              <button onclick="togglePassword('login-pass', this)" class="absolute right-sm top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button">
+                <span class="material-symbols-outlined text-md">visibility</span>
+              </button>
+            </div>
+          </div>
+          <button onclick="handleLogin()" class="w-full bg-primary-container text-on-primary-container font-manrope font-semibold py-md rounded-lg shadow-sm hover:brightness-95 transition-all duration-150 active:scale-[0.98]">
+            Sign in
+          </button>
+          <div class="relative py-base">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-outline-variant"></div></div>
+            <div class="relative flex justify-center"><span class="bg-surface-container-lowest px-md text-label-caps text-outline">OR</span></div>
+          </div>
+          <button onclick="handleLogin()" class="w-full flex items-center justify-center gap-sm px-md py-md border border-outline-variant rounded-lg font-manrope font-medium text-on-surface hover:bg-surface-container-low transition-colors duration-150">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Sign in with Google
+          </button>
+        </div>
+        <p class="text-center mt-lg font-body-sm text-body-sm text-outline anim-fade-up delay-4">
+          Don't have an account? <a onclick="navigateTo('signup')" class="text-primary font-semibold hover:underline cursor-pointer">Create an account</a>
+        </p>
+      </div>
+    </main>
+
+    <footer class="bg-[#FAFAFA] border-t border-slate-100 py-12">
+      <div class="max-w-[1200px] mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-md">
+        <span class="font-manrope text-xs text-slate-400">© 2025 MeetlyAI. All rights reserved.</span>
+        <div class="flex gap-lg">
+          <a class="font-manrope text-xs text-slate-400 hover:text-violet-500 transition-colors cursor-pointer" onclick="showToast('Privacy Policy')">Privacy Policy</a>
+          <a class="font-manrope text-xs text-slate-400 hover:text-violet-500 transition-colors cursor-pointer" onclick="showToast('Terms of Service')">Terms of Service</a>
+          <a class="font-manrope text-xs text-slate-400 hover:text-violet-500 transition-colors cursor-pointer" onclick="showToast('Contact: hello@MeetlyAI.ai')">Contact</a>
+        </div>
+      </div>
+    </footer>
+    <!-- Decorative bg blobs -->
+    <div class="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary-container/20 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+    <div class="fixed bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+  </div>
+
+  <!-- SIGNUP PAGE -->
+  <div id="page-signup" class="auth-wrapper anim-fade-in" style="display:none">
+    <header class="bg-[#FAFAFA] border-b border-slate-100 shadow-sm fixed top-0 w-full z-50">
+      <div class="flex items-center justify-between px-8 h-16 max-w-[1200px] mx-auto">
+        <span class="text-xl font-bold text-slate-900 tracking-tight font-manrope">MeetlyAI</span>
+        <button onclick="navigateTo('login')" class="font-manrope text-sm font-medium text-primary hover:underline">Already have an account? Sign in</button>
+      </div>
+    </header>
+    <main class="flex-grow flex items-center justify-center px-gutter pt-16 pb-lg flex-1 min-h-screen">
+      <div class="w-full max-w-[480px] mt-lg">
+        <div class="text-center mb-lg anim-fade-up">
+          <h1 class="font-h1 text-h1 text-on-surface mb-xs">Start for free</h1>
+          <p class="font-body-md text-body-md text-outline">Join 50,000+ teams transforming meetings into momentum.</p>
+        </div>
+        <div class="level-1-shadow bg-surface-container-lowest rounded-xl p-lg space-y-md anim-fade-up delay-2">
+          <div class="grid grid-cols-2 gap-sm">
+            <div class="space-y-xs">
+              <label class="font-label-caps text-label-caps text-outline block">First Name</label>
+              <input class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all" placeholder="Sarah" type="text"/>
+            </div>
+            <div class="space-y-xs">
+              <label class="font-label-caps text-label-caps text-outline block">Last Name</label>
+              <input class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all" placeholder="Jenkins" type="text"/>
+            </div>
+          </div>
+          <div class="space-y-xs">
+            <label class="font-label-caps text-label-caps text-outline block">Work Email</label>
+            <input class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all" placeholder="name@company.com" type="email"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="font-label-caps text-label-caps text-outline block">Password</label>
+            <div class="relative">
+              <input id="signup-pass" class="w-full px-md py-sm rounded-lg border border-outline-variant bg-white focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-primary transition-all" placeholder="Min. 8 characters" type="password"/>
+              <button onclick="togglePassword('signup-pass',this)" class="absolute right-sm top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button"><span class="material-symbols-outlined text-md">visibility</span></button>
+            </div>
+          </div>
+          <!-- plan selection -->
+          <div class="space-y-xs">
+            <label class="font-label-caps text-label-caps text-outline block">Plan</label>
+            <div class="grid grid-cols-2 gap-sm">
+              <button onclick="selectPlan(this,'free')" id="plan-free" class="plan-btn selected border-2 border-primary-container bg-primary-container/10 rounded-xl p-sm text-left transition-all">
+                <p class="font-bold text-sm text-indigo-700">Free</p><p class="text-[11px] text-slate-500">5 meetings/mo</p>
+              </button>
+              <button onclick="selectPlan(this,'pro')" id="plan-pro" class="plan-btn border border-slate-100 rounded-xl p-sm text-left hover:border-primary-container transition-all">
+                <p class="font-bold text-sm text-slate-600">Pro — $12/mo</p><p class="text-[11px] text-slate-500">Unlimited meetings</p>
+              </button>
+            </div>
+          </div>
+          <button onclick="handleSignup()" class="w-full bg-primary-container text-on-primary-container font-manrope font-semibold py-md rounded-lg shadow-sm hover:brightness-95 transition-all active:scale-[0.98]">Create Account</button>
+          <p class="text-center text-[11px] text-slate-400 leading-relaxed">By signing up, you agree to our <a class="underline cursor-pointer" onclick="showToast('Terms of Service')">Terms</a> and <a class="underline cursor-pointer" onclick="showToast('Privacy Policy')">Privacy Policy</a>.</p>
+        </div>
+      </div>
+    </main>
+    <div class="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary-container/20 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+  </div>
+
+</div><!-- /auth-section -->
+
+<!-- ===== MAIN APP (with sidebar) ===== -->
+<div id="app-section" style="display:none">
+
+  <!-- SIDEBAR (Angular Component: SidebarComponent) -->
+  <aside id="sidebar" class="fixed h-screen w-64 left-0 border-r border-slate-200/50 bg-[#FAFAFA] z-50 flex flex-col p-4 anim-slide-left overflow-y-auto">
+    <div class="px-2 py-4 mb-2">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-indigo-600 flex-shrink-0">
+          <span class="material-symbols-outlined text-lg">hub</span>
+        </div>
+        <div>
+          <h1 class="text-lg font-black text-indigo-600 font-manrope leading-none">MeetlyAI</h1>
+          <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-0.5">High Performance Hub</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="navigateTo('new-meeting')" class="w-full py-3 px-4 bg-primary-container text-on-primary-container font-manrope font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors mb-4 active:scale-95">
+      <span class="material-symbols-outlined">add</span> New Meeting
+    </button>
+
+    <nav class="flex-1 space-y-1">
+      <a onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-link">
+        <span class="material-symbols-outlined">grid_view</span><span>Dashboard</span>
+      </a>
+      <a onclick="navigateTo('new-meeting')" id="nav-new-meeting" class="nav-link">
+        <span class="material-symbols-outlined">add_circle</span><span>New Meeting</span>
+      </a>
+      <a onclick="navigateTo('meeting-summary')" id="nav-meeting-summary" class="nav-link">
+        <span class="material-symbols-outlined">mic</span><span>Meeting Summary</span>
+      </a>
+      <a onclick="navigateTo('tasks')" id="nav-tasks" class="nav-link">
+        <span class="material-symbols-outlined">task_alt</span><span>Tasks</span>
+      </a>
+      <!-- <a onclick="navigateTo('email-preview')" id="nav-email-preview" class="nav-link">
+        <span class="material-symbols-outlined">mail</span><span>Email Preview</span>
+      </a> -->
+      <a onclick="navigateTo('team')" id="nav-team" class="nav-link">
+        <span class="material-symbols-outlined">groups</span><span>Team</span>
+      </a>
+      <a onclick="navigateTo('settings')" id="nav-settings" class="nav-link">
+        <span class="material-symbols-outlined">settings</span><span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto pt-4 border-t border-slate-100">
+      <div class="flex items-center gap-3 px-2 mb-3">
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">SJ</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-on-surface truncate font-manrope">Sarah Jenkins</p>
+          <p class="text-[10px] text-on-surface-variant">Pro Plan</p>
+        </div>
+        <button onclick="navigateTo('login')" class="text-slate-400 hover:text-red-500 transition-colors" title="Sign out">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+        </button>
+      </div>
+      <div class="px-2">
+        <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+          <span>Storage</span><span class="text-indigo-600 font-bold">85%</span>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+          <div class="bg-indigo-500 h-full rounded-full animate-grow" style="width:85%"></div>
+        </div>
+        <button onclick="showToast('Upgrade to Enterprise for unlimited storage!')" class="mt-2 w-full text-[11px] font-bold text-indigo-600 hover:underline">Upgrade Plan</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="ml-64 min-h-screen">
+
+    <!-- TOP APP BAR (Angular Component: TopbarComponent) -->
+    <header class="sticky top-0 z-40 flex justify-between items-center px-8 h-16 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-lg">search</span>
+          <input id="global-search" onkeyup="handleSearch(this)" class="pl-10 pr-4 py-1.5 bg-slate-50 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-primary-container focus:bg-white transition-all" placeholder="Search insights..." type="text"/>
+        </div>
+      </div>
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3 text-slate-500">
+          <button onclick="toggleNotifications()" class="hover:text-indigo-500 transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-indigo-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold badge-pulse">3</span>
+          </button>
+          <button onclick="showToast('Help center opening...')" class="hover:text-indigo-500 transition-colors"><span class="material-symbols-outlined">help</span></button>
+          <button onclick="navigateTo('settings')" class="hover:text-indigo-500 transition-colors"><span class="material-symbols-outlined">settings</span></button>
+        </div>
+        <button onclick="navigateTo('settings')" class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm hover:ring-2 hover:ring-indigo-300 transition-all">SJ</button>
+      </div>
+    </header>
+
+    <!-- PAGE: DASHBOARD (Angular Component: DashboardComponent) -->
+    <div id="page-dashboard" style="display:none">
+      <div class="max-w-[1200px] mx-auto p-gutter space-y-lg">
+
+        <!-- Welcome Header -->
+        <section class="flex justify-between items-end anim-fade-up">
+          <div>
+            <h2 class="font-h1 text-h1 text-slate-800">Hello, Sarah</h2>
+            <p class="font-body-lg text-slate-500 mt-base">Your productivity peak is 12% higher than last week.</p>
+          </div>
+          <div class="flex gap-sm">
+            <div class="bg-secondary-container px-4 py-2 rounded-full flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-secondary badge-pulse"></span>
+              <span class="text-label-caps text-on-secondary-container">Weekly Sync active</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Key Stats Bento Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+          <div class="bg-white p-lg rounded-xl custom-shadow flex flex-col justify-between h-40 anim-fade-up delay-1 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('dashboard')">
+            <div class="flex justify-between items-start">
+              <span class="p-2 bg-indigo-50 text-indigo-600 rounded-lg material-symbols-outlined">analytics</span>
+              <span class="text-label-caps text-secondary">+24%</span>
+            </div>
+            <div>
+              <p class="text-h3 font-h3 text-slate-800" id="stat-meetings">128</p>
+              <p class="text-body-sm text-slate-500">Meetings Processed</p>
+            </div>
+          </div>
+          <div class="bg-white p-lg rounded-xl custom-shadow flex flex-col justify-between h-40 anim-fade-up delay-2 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('tasks')">
+            <div class="flex justify-between items-start">
+              <span class="p-2 bg-secondary-container text-secondary rounded-lg material-symbols-outlined">task_alt</span>
+              <span class="text-label-caps text-secondary">+12%</span>
+            </div>
+            <div>
+              <p class="text-h3 font-h3 text-slate-800">432</p>
+              <p class="text-body-sm text-slate-500">Tasks Generated</p>
+            </div>
+          </div>
+          <div class="bg-white p-lg rounded-xl custom-shadow flex flex-col justify-between h-40 border-b-4 border-indigo-100 anim-fade-up delay-3 hover:shadow-md transition-shadow cursor-pointer" style="display:none">
+            <div class="flex justify-between items-start">
+              <span class="p-2 bg-primary-container text-primary rounded-lg material-symbols-outlined">mail</span>
+              <span class="text-label-caps text-slate-400">Stable</span>
+            </div>
+            <div>
+              <p class="text-h3 font-h3 text-slate-800">89</p>
+              <p class="text-body-sm text-slate-500">Summaries Sent</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Meetings & Action Items -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+          <div class="lg:col-span-2 bg-white rounded-xl custom-shadow overflow-hidden anim-fade-up delay-3">
+            <div class="p-lg border-b border-slate-50 flex justify-between items-center">
+              <h3 class="font-h3 text-h3 text-slate-800">Recent Meetings</h3>
+              <button onclick="navigateTo('meeting-summary')" class="text-body-sm text-indigo-600 font-semibold hover:underline">View All</button>
+            </div>
+            <div class="divide-y divide-slate-50">
+              <div onclick="navigateTo('meeting-summary')" class="p-md hover:bg-slate-50 transition-colors cursor-pointer group flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-500 flex-shrink-0">
+                  <span class="material-symbols-outlined">groups</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-manrope font-semibold text-slate-800">Q3 Product Strategy Sync</h4>
+                  <p class="text-body-sm text-slate-500">Yesterday at 2:00 PM • 45 mins</p>
+                </div>
+                <div class="flex -space-x-2">
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-indigo-200 flex items-center justify-center text-[9px] font-bold text-indigo-700">MJ</div>
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-emerald-200 flex items-center justify-center text-[9px] font-bold text-emerald-700">AT</div>
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-slate-400 flex items-center justify-center text-[10px] font-bold text-white">+3</div>
+                </div>
+                <span class="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">chevron_right</span>
+              </div>
+              <div onclick="navigateTo('meeting-summary')" class="p-md hover:bg-slate-50 transition-colors cursor-pointer group flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                  <span class="material-symbols-outlined">engineering</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-manrope font-semibold text-slate-800">Weekly Engineering Standup</h4>
+                  <p class="text-body-sm text-slate-500">Today at 9:30 AM • 15 mins</p>
+                </div>
+                <div class="flex -space-x-2">
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-indigo-200 flex items-center justify-center text-[9px] font-bold text-indigo-700">RK</div>
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-amber-200 flex items-center justify-center text-[9px] font-bold text-amber-700">LP</div>
+                </div>
+                <span class="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">chevron_right</span>
+              </div>
+              <div onclick="navigateTo('meeting-summary')" class="p-md hover:bg-slate-50 transition-colors cursor-pointer group flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500 flex-shrink-0">
+                  <span class="material-symbols-outlined">palette</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-manrope font-semibold text-slate-800">Branding Workshop - Session 1</h4>
+                  <p class="text-body-sm text-slate-500">Oct 24 • 1 hr 20 mins</p>
+                </div>
+                <div class="flex -space-x-2">
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-indigo-200 flex items-center justify-center text-[9px] font-bold text-indigo-700">SD</div>
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-emerald-200 flex items-center justify-center text-[9px] font-bold text-emerald-700">BM</div>
+                  <div class="w-7 h-7 rounded-full border-2 border-white bg-slate-500 flex items-center justify-center text-[10px] font-bold text-white">+8</div>
+                </div>
+                <span class="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">chevron_right</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Priorities Card -->
+          <div class="bg-indigo-600 rounded-xl p-lg text-white space-y-6 relative overflow-hidden anim-fade-up delay-4">
+            <div class="relative z-10">
+              <h3 class="font-h3 text-h3">Upcoming Priorities</h3>
+              <p class="text-indigo-100 text-body-sm">MeetlyAI identified 3 critical action items for your next meeting.</p>
+              <div class="mt-8 space-y-4">
+                <div onclick="navigateTo('tasks')" class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-indigo-200">priority_high</span>
+                    <div>
+                      <p class="text-body-sm font-semibold">Review Budget Allocations</p>
+                      <p class="text-[12px] text-indigo-200">Assigned from Q3 Strategy</p>
+                    </div>
+                  </div>
+                </div>
+                <div onclick="navigateTo('tasks')" class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-indigo-200">schedule</span>
+                    <div>
+                      <p class="text-body-sm font-semibold">Confirm API Specs</p>
+                      <p class="text-[12px] text-indigo-200">Pending from Standup</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="navigateTo('new-meeting')" class="w-full mt-8 py-3 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors active:scale-95">
+                Prepare for Tomorrow
+              </button>
+            </div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl pointer-events-none"></div>
+          </div>
+        </section>
+
+        <!-- Insights & AI Recap -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+          <div class="bg-white p-lg rounded-xl custom-shadow anim-fade-up delay-5">
+            <div class="flex items-center justify-between mb-md">
+              <h4 class="font-h3 text-h3 text-slate-800">Meeting Sentiments</h4>
+              <button onclick="showToast('More analytics coming soon!')" class="text-slate-400 hover:text-indigo-500 transition-colors"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="space-y-4">
+              <div class="space-y-1">
+                <div class="flex justify-between text-body-sm"><span class="text-slate-600">Productive</span><span class="font-bold">78%</span></div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-secondary rounded-full animate-grow" style="width:78%"></div>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-body-sm"><span class="text-slate-600">Decision Focused</span><span class="font-bold">62%</span></div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-400 rounded-full animate-grow" style="width:62%"></div>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-body-sm"><span class="text-slate-600">Informational</span><span class="font-bold">15%</span></div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-200 rounded-full animate-grow" style="width:15%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#f1edee] p-lg rounded-xl flex flex-col justify-center items-center text-center space-y-4 anim-fade-up delay-6">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm">
+              <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+            </div>
+            <div>
+              <h4 class="font-h3 text-h3 text-slate-800">AI Weekly Recap</h4>
+              <p class="text-body-sm text-slate-500 max-w-[300px] mt-1">You saved 4.5 hours this week by skipping optional syncs based on our AI recommendations.</p>
+            </div>
+            <button onclick="navigateTo('meeting-summary')" class="px-6 py-2 bg-primary text-white rounded-full text-body-sm font-semibold hover:opacity-90 transition-opacity active:scale-95">Read Full Report</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- PAGE: NEW MEETING -->
+<div id="page-new-meeting" style="display:none">
+  <div class="max-w-[900px] mx-auto p-gutter lg:px-xl space-y-lg">
+    <div class="space-y-base anim-fade-up">
+      <h2 class="font-h1 text-h1 text-on-surface">New Meeting</h2>
+      <p class="text-body-lg font-body-lg text-slate-500">
+        Create a meeting from a written transcript. Audio upload is disabled for now.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-gutter">
+      <!-- Left: Transcript Input -->
+      <div class="lg:col-span-3 space-y-gutter">
+
+        <!-- Audio Disabled Notice -->
+        <div class="bg-slate-50 p-lg rounded-[24px] border border-slate-200 anim-fade-up delay-1">
+          <div class="flex items-start gap-md">
+            <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+              <span class="material-symbols-outlined text-3xl">cloud_off</span>
+            </div>
+            <div>
+              <h3 class="font-h3 text-h3 text-slate-700">Audio Upload Disabled</h3>
+              <p class="text-body-sm text-slate-500 mt-1">
+                Audio recording upload is not available in this version. Please paste the full meeting transcript below.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transcript Area -->
+        <div class="bg-white p-lg rounded-[24px] level-1-shadow space-y-md anim-fade-up delay-2">
+          <div class="flex items-center justify-between">
+            <h3 class="font-h3 text-h3 text-on-surface">Meeting Transcript</h3>
+            <button onclick="pasteFromClipboard()" class="text-primary text-body-sm font-medium hover:underline flex items-center gap-1">
+              <span class="material-symbols-outlined text-[18px]">content_paste</span>
+              Paste from clipboard
+            </button>
+          </div>
+
+          <textarea
+            id="transcript-input"
+            class="w-full h-64 p-md rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary-container/40 focus:border-primary transition-all font-body-md resize-none placeholder:text-slate-300"
+            placeholder="Paste the full meeting transcript here... Example: Sarah: We need to finish the backend APIs. Esma: I will connect the frontend..."
+          ></textarea>
+
+          <p class="text-[11px] text-slate-400">
+            This transcript will be saved with the meeting and used later for summary/tasks.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Meeting Details -->
+      <div class="lg:col-span-2 space-y-gutter">
+        <div class="bg-white p-lg rounded-[24px] level-1-shadow space-y-lg sticky top-24 anim-fade-up delay-3">
+          <h3 class="font-h3 text-h3 text-on-surface">Meeting Details</h3>
+
+          <div class="space-y-md">
+            <label class="block text-body-sm font-semibold text-slate-600 font-label-caps">
+              Meeting Title
+            </label>
+            <input
+              id="meeting-title"
+              class="w-full p-sm rounded-lg border border-slate-200 focus:ring-4 focus:ring-primary-container/40 focus:border-primary transition-all"
+              placeholder="e.g. Backend API Review"
+              type="text"
+            />
+          </div>
+
+          <div class="space-y-md">
+            <label class="block text-body-sm font-semibold text-slate-600 font-label-caps">
+              Processing Mode
+            </label>
+
+            <div class="p-sm border-2 border-primary-container bg-primary-container/10 rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-white rounded-lg text-primary shadow-sm">
+                  <span class="material-symbols-outlined">description</span>
+                </div>
+                <div>
+                  <p class="font-bold text-sm text-indigo-700">Transcript Only</p>
+                  <p class="text-[11px] text-slate-500">
+                    Save meeting title and full transcript.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-md border-t border-slate-100">
+            <button
+              onclick="processMeeting()"
+              class="w-full py-4 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 group"
+            >
+              <span id="process-btn-text">Create Meeting</span>
+              <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+
+            <p class="text-center text-[11px] text-slate-400 mt-4 px-4 leading-relaxed">
+              The meeting will be saved to the database using your Laravel API.
+            </p>
+          </div>
+        </div>
+
+        <!-- Status Note -->
+        <div class="p-lg rounded-[24px] bg-secondary-container/20 border border-secondary-container/40 flex items-start gap-md anim-fade-up delay-4">
+          <div class="text-secondary bg-white p-2 rounded-lg shrink-0 shadow-sm">
+            <span class="material-symbols-outlined">info</span>
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm font-bold text-on-secondary-container">Current Version</p>
+            <p class="text-xs text-on-secondary-container/80 leading-relaxed">
+              This page currently supports transcript-based meeting creation only. AI summary and audio transcription can be added later.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- PAGE: MEETING SUMMARY -->
+<div id="page-meeting-summary" style="display:none">
+  <div class="max-w-[1200px] mx-auto p-gutter">
+
+    <!-- Header -->
+    <div class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md anim-fade-up">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-caps text-[10px]">
+            Meeting Summary
+          </span>
+          <span id="summary-date" class="text-on-surface-variant font-label-caps text-[10px]">
+            Loading...
+          </span>
+        </div>
+        <h2 id="summary-title" class="font-h2 text-h2 text-on-surface">
+          Select a meeting
+        </h2>
+      </div>
+
+      <div class="flex gap-sm">
+        <button onclick="navigateTo('dashboard')" class="px-md py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all flex items-center gap-2 active:scale-95">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          Back
+        </button>
+      </div>
+    </div>
+
+
+    <div id="meeting-summary-picker" class="bg-white rounded-xl custom-shadow p-lg mb-gutter" style="display:none">
+  <div class="flex items-center justify-between mb-md">
+    <h3 class="font-h3 text-h3 text-on-surface">Choose a Meeting</h3>
+    <button onclick="loadMeetingSummaryPicker()" class="text-sm text-indigo-600 font-semibold hover:underline">
+      Refresh
+    </button>
+  </div>
+
+  <div id="meeting-summary-picker-list" class="divide-y divide-slate-50">
+    <div class="text-slate-400 text-sm">Loading meetings...</div>
+  </div>
+</div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+
+      <!-- Main Summary -->
+      <div class="lg:col-span-2 space-y-gutter">
+
+        <!-- AI Summary Card -->
+        <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-1">
+          <div class="flex items-center justify-between mb-md">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </div>
+              <h3 class="font-h3 text-h3 text-on-surface">AI Summary</h3>
+            </div>
+
+            <button onclick="generateMeetingAI()" class="px-md py-2 bg-primary text-white rounded-lg text-sm font-medium hover:opacity-90 transition-all">
+              Generate AI
+            </button>
+          </div>
+
+          <div id="ai-summary-content" class="text-body-md text-slate-600 leading-relaxed">
+            No AI summary generated yet.
+          </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-2">
+          <div class="flex items-center justify-between mb-md">
+            <h3 class="font-h3 text-h3 text-on-surface">Action Items</h3>
+            <button onclick="navigateTo('tasks')" class="text-sm text-indigo-600 font-semibold hover:underline">
+              View in Tasks →
+            </button>
+          </div>
+
+          <div class="space-y-3" id="action-items-list">
+            <div class="text-slate-400 text-sm">
+              No action items generated yet.
+            </div>
+          </div>
+        </div>
+
+        <!-- Transcript -->
+        <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-3">
+          <div class="flex items-center justify-between mb-md">
+            <h3 class="font-h3 text-h3 text-on-surface">Full Transcript</h3>
+            <button onclick="copyMeetingTranscript()" class="text-sm text-indigo-600 font-semibold hover:underline flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">content_copy</span>
+              Copy
+            </button>
+          </div>
+
+          <div id="summary-transcript" class="text-sm text-slate-700 whitespace-pre-wrap max-h-80 overflow-y-auto pr-2">
+            No transcript selected.
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Info -->
+      <div class="space-y-gutter">
+
+        <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-2">
+          <h4 class="font-manrope font-semibold text-slate-800 mb-md">Meeting Info</h4>
+
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Status</span>
+              <span id="summary-status" class="font-semibold text-slate-800">Saved</span>
+            </div>
+
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Word count</span>
+              <span id="summary-word-count" class="font-semibold text-slate-800">0</span>
+            </div>
+
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Action items</span>
+              <span id="summary-action-count" class="font-semibold text-indigo-600">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 rounded-xl p-lg anim-fade-up delay-4">
+          <p class="text-sm font-semibold text-indigo-700 mb-2">AI Processing</p>
+          <p class="text-xs text-indigo-500 mb-4">
+            The summary and action items should come from your Laravel AI endpoint.
+          </p>
+          <button onclick="generateMeetingAI()" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors active:scale-95">
+            Generate Summary & Tasks
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- PAGE: TASKS (Angular Component: TasksComponent) -->
+    <div id="page-tasks" style="display:none">
+      <section class="p-gutter max-w-[1400px] mx-auto">
+        <div class="flex flex-col gap-sm mb-lg anim-fade-up">
+          <div class="flex justify-between items-end">
+            <div>
+              <h2 class="font-h2 text-h2 text-on-surface">Task Management</h2>
+              <p class="font-body-md text-on-surface-variant opacity-70">Visualizing the flow of cognitive-heavy operations.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="showToast('Filter options coming soon!')" class="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-white transition-all shadow-sm active:scale-95">
+                <span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+              </button>
+              <button onclick="showToast('Adding new task...')" class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container rounded-lg text-sm font-semibold hover:brightness-95 transition-all shadow-sm active:scale-95">
+                <span class="material-symbols-outlined text-[18px]">add</span> Add Task
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Kanban Board -->
+        <div class="flex gap-gutter overflow-x-auto pb-lg snap-x">
+          <!-- Backlog -->
+          <div class="flex-1 flex flex-col gap-md snap-start min-w-[280px]">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span><h4 class="font-manrope font-semibold text-slate-600 text-sm">Backlog</h4><span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">4</span></div>
+              <button onclick="showToast('New backlog task added!')" class="text-slate-400 hover:text-indigo-500"><span class="material-symbols-outlined text-sm">add</span></button>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer" onclick="showToast('Task details opening...')">
+              <p class="text-sm font-semibold text-slate-800 mb-2">Redesign onboarding flow</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Design</span><span class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[9px] font-bold text-purple-600">LP</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer" onclick="showToast('Task details opening...')">
+              <p class="text-sm font-semibold text-slate-800 mb-2">Write API documentation for v3 endpoints</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Engineering</span><span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-600">MT</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer" onclick="showToast('Task details opening...')">
+              <p class="text-sm font-semibold text-slate-800 mb-2">User interview synthesis Q4</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Research</span><span class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-bold text-emerald-600">SJ</span></div>
+            </div>
+          </div>
+          <!-- In Progress -->
+          <div class="flex-1 flex flex-col gap-md snap-start min-w-[280px]">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span><h4 class="font-manrope font-semibold text-slate-600 text-sm">In Progress</h4><span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">3</span></div>
+              <button onclick="showToast('New in-progress task!')" class="text-slate-400 hover:text-indigo-500"><span class="material-symbols-outlined text-sm">add</span></button>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow border-l-4 border-indigo-400 cursor-pointer" onclick="showToast('Opening task...')">
+              <p class="text-sm font-semibold text-slate-800 mb-1">Analytics dashboard API spec</p>
+              <div class="w-full h-1.5 bg-slate-100 rounded-full mb-2"><div class="h-full bg-indigo-400 rounded-full animate-grow" style="width:65%"></div></div>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-red-500 font-medium">High • Due Nov 1</span><span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-600">MT</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow border-l-4 border-amber-300 cursor-pointer" onclick="showToast('Opening task...')">
+              <p class="text-sm font-semibold text-slate-800 mb-1">Technical debt sprint planning</p>
+              <div class="w-full h-1.5 bg-slate-100 rounded-full mb-2"><div class="h-full bg-amber-400 rounded-full animate-grow" style="width:30%"></div></div>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-amber-500 font-medium">Medium • Due Oct 30</span><span class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-[9px] font-bold text-amber-600">SJ</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow border-l-4 border-indigo-300 cursor-pointer" onclick="showToast('Opening task...')">
+              <p class="text-sm font-semibold text-slate-800 mb-1">Enterprise pricing model revision</p>
+              <div class="w-full h-1.5 bg-slate-100 rounded-full mb-2"><div class="h-full bg-indigo-300 rounded-full animate-grow" style="width:80%"></div></div>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Low • Due Nov 5</span><span class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-[9px] font-bold text-amber-600">AR</span></div>
+            </div>
+          </div>
+          <!-- Review -->
+          <div class="flex-1 flex flex-col gap-md snap-start min-w-[280px]">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><h4 class="font-manrope font-semibold text-slate-600 text-sm">In Review</h4><span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">2</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer" onclick="showToast('Opening review task...')">
+              <p class="text-sm font-semibold text-slate-800 mb-2">Brand identity refresh proposal</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Design</span><span class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[9px] font-bold text-purple-600">LP</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer" onclick="showToast('Opening review task...')">
+              <p class="text-sm font-semibold text-slate-800 mb-2">Q4 OKR alignment document</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-slate-400">Strategy</span><span class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-bold text-emerald-600">SJ</span></div>
+            </div>
+          </div>
+          <!-- Done -->
+          <div class="flex-1 flex flex-col gap-md snap-start min-w-[280px]">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><h4 class="font-manrope font-semibold text-slate-600 text-sm">Done</h4><span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">5</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow opacity-70 cursor-pointer" onclick="showToast('Completed task!')">
+              <p class="text-sm font-semibold text-slate-800 mb-2 line-through">Share enterprise pricing deck with finance</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-emerald-500 font-medium">Completed Oct 22</span><span class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-[9px] font-bold text-amber-600">AR</span></div>
+            </div>
+            <div class="kanban-card bg-white p-md rounded-xl custom-shadow opacity-70 cursor-pointer" onclick="showToast('Completed task!')">
+              <p class="text-sm font-semibold text-slate-800 mb-2 line-through">Set up CI/CD pipeline for staging</p>
+              <div class="flex items-center justify-between"><span class="text-[11px] text-emerald-500 font-medium">Completed Oct 20</span><span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-600">MT</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE: EMAIL PREVIEW (Angular Component: EmailPreviewComponent) -->
+    <div id="page-email-preview" style="display:none">
+      <div class="max-w-[1100px] mx-auto p-gutter">
+        <div class="flex justify-between items-end mb-lg anim-fade-up">
+          <div>
+            <h2 class="font-h2 text-h2 text-on-surface">Email Preview</h2>
+            <p class="text-slate-500 text-body-md mt-1">AI-drafted follow-up email for Q4 Roadmap Alignment meeting.</p>
+          </div>
+          <div class="flex gap-sm">
+            <button onclick="showToast('Email saved as draft!')" class="px-md py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all flex items-center gap-2 active:scale-95">
+              <span class="material-symbols-outlined text-sm">save</span> Save Draft
+            </button>
+            <button onclick="showToast('Email sent to all 4 attendees!')" class="px-md py-2 bg-primary-container text-on-primary-container rounded-lg text-sm font-semibold hover:brightness-95 transition-all flex items-center gap-2 active:scale-95">
+              <span class="material-symbols-outlined text-sm">send</span> Send Email
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+          <!-- Email Compose -->
+          <div class="lg:col-span-2 bg-white rounded-xl custom-shadow overflow-hidden anim-fade-up delay-1">
+            <div class="px-lg py-md border-b border-slate-100 bg-slate-50">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="text-[11px] font-label-caps text-slate-400 w-6">To</span>
+                <div class="flex flex-wrap gap-2 flex-1">
+                  <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium flex items-center gap-1">Marcus Thorne <button onclick="showToast('Removing recipient...')" class="ml-1 hover:text-red-500">×</button></span>
+                  <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium flex items-center gap-1">Alex Rivera <button onclick="showToast('Removing recipient...')" class="ml-1 hover:text-red-500">×</button></span>
+                  <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium flex items-center gap-1">Lisa Park <button onclick="showToast('Removing recipient...')" class="ml-1 hover:text-red-500">×</button></span>
+                  <button onclick="showToast('Add recipient dialog...')" class="text-indigo-500 text-xs hover:underline">+ Add</button>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[11px] font-label-caps text-slate-400 w-6">Re</span>
+                <input class="flex-1 text-sm bg-transparent border-none focus:outline-none text-slate-700 font-medium" value="[MeetlyAI] Q4 Roadmap Alignment & Technical Debt Strategy — Action Items" type="text"/>
+              </div>
+            </div>
+            <div class="p-lg">
+              <textarea id="email-body" class="w-full h-[420px] text-sm text-slate-700 leading-relaxed border-none focus:outline-none resize-none" style="font-family:'Inter',sans-serif">Hi team,
+
+Thanks for joining today's Q4 planning session. Here's a quick summary of what we aligned on and the action items coming out of our discussion.
+
+📋 MEETING SUMMARY
+We finalized three key priorities for Q4: (1) shipping the analytics dashboard by November 15th, (2) a dedicated two-sprint technical debt reduction initiative, and (3) closing the enterprise pricing tier. The mobile app redesign has been moved to Q1 2025.
+
+✅ ACTION ITEMS
+
+→ Marcus Thorne
+   Create detailed technical spec for analytics dashboard API endpoints
+   Due: November 1st | Priority: High
+
+→ Sarah Jenkins  
+   Schedule technical debt audit with backend team leads
+   Due: October 30th | Priority: Medium
+
+→ Alex Rivera
+   Enterprise pricing deck — COMPLETED ✓
+
+⚠️ KEY RISKS
+• Third-party data pipeline dependency for the analytics feature
+• Design team availability for enterprise onboarding flow review
+
+Let me know if I've missed anything or if any of the action items need clarification.
+
+Best,
+Sarah Jenkins
+Product Lead, MeetlyAI</textarea>
+            </div>
+            <div class="px-lg py-md border-t border-slate-100 flex items-center justify-between">
+              <div class="flex gap-2">
+                <button onclick="showToast('Formatting toolbar activated!')" class="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-50 rounded-lg transition-colors"><span class="material-symbols-outlined text-sm">format_bold</span></button>
+                <button onclick="showToast('Attach file...')" class="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-50 rounded-lg transition-colors"><span class="material-symbols-outlined text-sm">attach_file</span></button>
+                <button onclick="regenerateEmail()" class="flex items-center gap-1 px-3 py-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors">
+                  <span class="material-symbols-outlined text-sm">auto_awesome</span> Regenerate
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400">AI-generated • Review before sending</p>
+            </div>
+          </div>
+
+          <!-- Email Settings -->
+          <div class="space-y-gutter">
+            <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-2">
+              <h4 class="font-manrope font-semibold text-slate-800 mb-md">Send Options</h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-slate-600">Send now</label>
+                  <input type="checkbox" checked class="w-4 h-4 accent-indigo-600" onclick="showToast('Schedule changed!')"/>
+                </div>
+                <div>
+                  <label class="text-[11px] text-slate-400 font-label-caps">Or schedule for</label>
+                  <input type="datetime-local" class="mt-1 w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-container/40 focus:outline-none"/>
+                </div>
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-slate-600">Include meeting recording</label>
+                  <input type="checkbox" class="w-4 h-4 accent-indigo-600" onclick="showToast('Recording attachment toggled!')"/>
+                </div>
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-slate-600">Request read receipts</label>
+                  <input type="checkbox" class="w-4 h-4 accent-indigo-600" onclick="showToast('Read receipts toggled!')"/>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-3">
+              <h4 class="font-manrope font-semibold text-slate-800 mb-md">AI Analysis</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm"><span class="text-slate-500">Tone</span><span class="font-semibold text-emerald-600">Professional ✓</span></div>
+                <div class="flex justify-between text-sm"><span class="text-slate-500">Clarity</span><span class="font-semibold text-emerald-600">High ✓</span></div>
+                <div class="flex justify-between text-sm"><span class="text-slate-500">Action items</span><span class="font-semibold text-indigo-600">3 detected</span></div>
+                <div class="flex justify-between text-sm"><span class="text-slate-500">Reading time</span><span class="font-semibold text-slate-700">~45 sec</span></div>
+              </div>
+            </div>
+            <div class="bg-secondary-container/30 rounded-xl p-lg anim-fade-up delay-4">
+              <p class="text-sm font-semibold text-on-secondary-container mb-2">Previous Sends</p>
+              <div class="space-y-2 text-xs text-slate-500">
+                <p onclick="showToast('Opening previous email...')" class="hover:text-indigo-600 cursor-pointer">→ Weekly Engineering Standup — Oct 23</p>
+                <p onclick="showToast('Opening previous email...')" class="hover:text-indigo-600 cursor-pointer">→ Branding Workshop Session 1 — Oct 22</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- PAGE: TEAM MANAGEMENT -->
+<div id="page-team" style="display:none">
+  <div class="max-w-[1200px] mx-auto p-gutter">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl anim-fade-up">
+      <div>
+        <h2 class="font-h1 text-h2 text-slate-800">Team Directory</h2>
+        <p id="team-subtitle" class="font-body-md text-on-surface-variant opacity-70">
+          Loading team members...
+        </p>
+      </div>
+
+      <button onclick="showToast('Invite member dialog opening...')" class="flex items-center gap-xs bg-primary-container text-on-primary-container font-semibold text-sm px-lg py-sm rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95">
+        <span class="material-symbols-outlined">person_add</span>
+        Invite Member
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl">
+      <div class="bg-white p-md rounded-xl shadow-sm border-l-4 border-indigo-200 anim-fade-up delay-1">
+        <p class="text-[11px] font-label-caps text-slate-400 uppercase">Total Members</p>
+        <h3 id="team-total-count" class="font-h2 text-h3 text-slate-800 mt-base">0</h3>
+      </div>
+
+      <div class="bg-white p-md rounded-xl shadow-sm border-l-4 border-secondary-container anim-fade-up delay-2">
+        <p class="text-[11px] font-label-caps text-slate-400 uppercase">Active This Week</p>
+        <h3 id="team-active-count" class="font-h2 text-h3 text-slate-800 mt-base">0</h3>
+      </div>
+
+      <div class="bg-white p-md rounded-xl shadow-sm border-l-4 border-tertiary-container anim-fade-up delay-3">
+        <p class="text-[11px] font-label-caps text-slate-400 uppercase">New This Month</p>
+        <h3 id="team-new-count" class="font-h2 text-h3 text-slate-800 mt-base">0</h3>
+      </div>
+
+      <div class="bg-white p-md rounded-xl shadow-sm border-l-4 border-error-container anim-fade-up delay-4">
+        <p class="text-[11px] font-label-caps text-slate-400 uppercase">Pending Invites</p>
+        <h3 id="team-pending-count" class="font-h2 text-h3 text-slate-800 mt-base">0</h3>
+      </div>
+    </div>
+
+    <!-- Real Team Cards will be rendered here -->
+    <div id="team-members-list" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-gutter">
+      <div class="col-span-full text-slate-400">Loading team...</div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- PAGE: SETTINGS (Angular Component: SettingsComponent) -->
+    <div id="page-settings" style="display:none">
+      <div class="max-w-[1100px] mx-auto p-gutter">
+        <h2 class="font-h2 text-xl font-bold text-slate-800 mb-lg anim-fade-up">Settings</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-gutter">
+          <!-- Settings Nav -->
+          <div class="lg:col-span-1 anim-slide-left">
+            <div class="bg-white rounded-xl custom-shadow p-md">
+              <div class="text-center mb-md">
+                <div class="relative inline-block">
+                  <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl mx-auto">SJ</div>
+                  <button onclick="showToast('Profile photo upload...')" class="absolute bottom-0 right-0 bg-white shadow-md rounded-full p-1.5 border border-slate-100 text-slate-600 hover:text-indigo-600 transition-all">
+                    <span class="material-symbols-outlined text-sm">photo_camera</span>
+                  </button>
+                </div>
+                <h3 class="font-h3 text-lg mt-2">Sarah Jenkins</h3>
+                <p class="text-sm text-slate-400">Product Lead</p>
+              </div>
+              <div class="space-y-1">
+                <button onclick="setSettingsTab('profile')" class="settings-tab w-full flex items-center gap-3 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium transition-all">
+                  <span class="material-symbols-outlined text-sm">person</span> Profile
+                </button>
+                <button onclick="setSettingsTab('integrations')" class="settings-tab w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm transition-all">
+                  <span class="material-symbols-outlined text-sm">extension</span> Integrations
+                </button>
+                <button onclick="setSettingsTab('notifications')" class="settings-tab w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm transition-all">
+                  <span class="material-symbols-outlined text-sm">notifications</span> Notifications
+                </button>
+                <button onclick="setSettingsTab('billing')" class="settings-tab w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm transition-all">
+                  <span class="material-symbols-outlined text-sm">credit_card</span> Billing
+                </button>
+                <button onclick="navigateTo('login')" class="w-full flex items-center gap-3 px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm transition-all mt-4">
+                  <span class="material-symbols-outlined text-sm">logout</span> Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Settings Content -->
+          <div class="lg:col-span-3 space-y-gutter">
+            <!-- Profile Tab -->
+            <div id="settings-tab-profile" class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-1">
+              <h2 class="font-h2 text-2xl mb-xs">Profile Information</h2>
+              <p class="text-slate-500 text-sm mb-lg">Update your personal details and preferences.</p>
+              <div class="space-y-md">
+                <div class="grid grid-cols-2 gap-md">
+                  <div>
+                    <label class="font-label-caps text-on-surface-variant px-1 block mb-1">Full Name</label>
+                    <input class="w-full px-md py-sm rounded-lg border border-outline-variant focus:ring-4 focus:ring-primary-container focus:outline-none transition-all" value="Sarah Jenkins" type="text"/>
+                  </div>
+                  <div>
+                    <label class="font-label-caps text-on-surface-variant px-1 block mb-1">Display Name</label>
+                    <input class="w-full px-md py-sm rounded-lg border border-outline-variant focus:ring-4 focus:ring-primary-container focus:outline-none transition-all" value="Sarah J." type="text"/>
+                  </div>
+                </div>
+                <div>
+                  <label class="font-label-caps text-on-surface-variant px-1 block mb-1">Email Address</label>
+                  <input class="w-full px-md py-sm rounded-lg border border-outline-variant focus:ring-4 focus:ring-primary-container focus:outline-none transition-all" value="sarah@MeetlyAI.ai" type="email"/>
+                </div>
+                <div>
+                  <label class="font-label-caps text-on-surface-variant px-1 block mb-1">Biography</label>
+                  <textarea class="w-full px-md py-sm rounded-lg border border-outline-variant focus:ring-4 focus:ring-primary-container focus:outline-none transition-all resize-none h-20" placeholder="Tell the team about yourself...">Product Lead focused on turning meeting chaos into actionable clarity. Based in San Francisco.</textarea>
+                </div>
+                <button onclick="showToast('Profile saved successfully!')" class="bg-primary-container text-on-primary-container px-lg py-2 rounded-lg font-medium hover:opacity-90 transition-all shadow-sm active:scale-95">Save Changes</button>
+              </div>
+            </div>
+
+            <!-- Automations (always visible) -->
+            <div id="settings-tab-notifications" class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-2">
+              <h2 class="font-h2 text-2xl mb-xs">Automations</h2>
+              <p class="text-slate-500 text-sm mb-lg">Configure how MeetlyAI automates your workflow.</p>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between py-3 border-b border-slate-50">
+                  <div><p class="text-sm font-semibold text-slate-800">Auto-send summary emails</p><p class="text-xs text-slate-400 mt-0.5">Automatically email summaries after each meeting</p></div>
+                  <label class="relative cursor-pointer" onclick="showToast('Auto-email toggled!')">
+                    <input type="checkbox" checked class="toggle-input sr-only"/>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-slate-50">
+                  <div><p class="text-sm font-semibold text-slate-800">Create tasks from action items</p><p class="text-xs text-slate-400 mt-0.5">Automatically add detected tasks to your task board</p></div>
+                  <label class="relative cursor-pointer" onclick="showToast('Auto-tasks toggled!')">
+                    <input type="checkbox" checked class="toggle-input sr-only"/>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                  <div><p class="text-sm font-semibold text-slate-800">Weekly digest report</p><p class="text-xs text-slate-400 mt-0.5">Receive a weekly productivity insights email every Monday</p></div>
+                  <label class="relative cursor-pointer" onclick="showToast('Weekly digest toggled!')">
+                    <input type="checkbox" class="toggle-input sr-only"/>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Integrations -->
+            <div id="settings-tab-integrations" class="bg-white rounded-xl custom-shadow p-lg anim-fade-up delay-3">
+              <h2 class="font-h2 text-2xl mb-xs">Integrations</h2>
+              <p class="text-slate-500 text-sm mb-lg">Connect your tools for a seamless workflow.</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-md border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center gap-3"><div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xs">Z</div><div><p class="text-sm font-semibold text-slate-800">Zoom</p><p class="text-xs text-slate-400">Auto-import recordings</p></div></div>
+                  <button onclick="showToast('Configure Zoom integration...')" class="px-md py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all active:scale-95">Configure</button>
+                </div>
+                <div class="flex items-center justify-between p-md border border-emerald-100 bg-emerald-50/30 rounded-xl">
+                  <div class="flex items-center gap-3"><div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 font-bold text-xs">Sl</div><div><p class="text-sm font-semibold text-slate-800">Slack</p><p class="text-xs text-emerald-500">Connected • Posting to #meetings</p></div></div>
+                  <button onclick="showToast('Slack is connected!')" class="px-md py-1.5 bg-primary-container text-on-primary-container border border-primary-container/20 rounded-lg text-sm font-medium active:scale-95">Connected ✓</button>
+                </div>
+                <div class="flex items-center justify-between p-md border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-xs">As</div><div><p class="text-sm font-semibold text-slate-800">Asana</p><p class="text-xs text-slate-400">Sync action items</p></div></div>
+                  <button onclick="showToast('Connecting to Asana...')" class="px-md py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all active:scale-95">Connect</button>
+                </div>
+                <div class="flex items-center justify-between p-md border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center gap-3"><div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 font-bold text-xs">MS</div><div><p class="text-sm font-semibold text-slate-800">Microsoft Teams</p><p class="text-xs text-slate-400">Auto-import meetings & transcripts</p></div></div>
+                  <button onclick="showToast('Connecting to MS Teams...')" class="px-md py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all active:scale-95">Connect</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- /main -->
+
+  <!-- Floating AI Button -->
+  <button id="ai-fab" onclick="toggleAIPanel()" class="fixed bottom-gutter right-gutter w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+    <span class="material-symbols-outlined text-2xl">smart_toy</span>
+  </button>
+
+  <!-- AI Assistant Panel -->
+  <div id="ai-panel" style="display:none" class="fixed bottom-24 right-gutter w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 anim-scale-in overflow-hidden">
+    <div class="bg-indigo-600 p-md flex items-center justify-between">
+      <div class="flex items-center gap-2 text-white">
+        <span class="material-symbols-outlined">smart_toy</span>
+        <span class="font-manrope font-semibold text-sm">MeetlyAI AI</span>
+        <span class="w-2 h-2 bg-emerald-400 rounded-full badge-pulse"></span>
+      </div>
+      <button onclick="toggleAIPanel()" class="text-white/70 hover:text-white"><span class="material-symbols-outlined text-sm">close</span></button>
+    </div>
+    <div class="p-md space-y-3" id="ai-messages">
+      <div class="flex gap-2"><div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-xs text-indigo-600">smart_toy</span></div><div class="bg-slate-50 rounded-xl rounded-tl-none p-3 text-xs text-slate-700 flex-1">Hi Sarah! I've analyzed your recent meetings. You have 3 overdue action items. Would you like me to draft a follow-up?</div></div>
+    </div>
+    <div class="p-md border-t border-slate-100 flex gap-2">
+      <input id="ai-input" onkeydown="if(event.key==='Enter')sendAIMessage()" class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-container/40" placeholder="Ask MeetlyAI AI..."/>
+      <button onclick="sendAIMessage()" class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center hover:bg-indigo-700 transition-colors flex-shrink-0">
+        <span class="material-symbols-outlined text-sm">send</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Notifications Panel -->
+  <div id="notif-panel" style="display:none" class="fixed top-16 right-4 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 anim-scale-in overflow-hidden">
+    <div class="p-md border-b border-slate-100 flex items-center justify-between">
+      <p class="font-manrope font-semibold text-slate-800">Notifications</p>
+      <button onclick="markAllRead()" class="text-xs text-indigo-600 font-medium hover:underline">Mark all read</button>
+    </div>
+    <div class="divide-y divide-slate-50 max-h-72 overflow-y-auto">
+      <div class="p-md hover:bg-slate-50 cursor-pointer transition-colors" onclick="showToast('Opening meeting summary...');toggleNotifications()">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-sm text-indigo-600">mic</span></div>
+          <div><p class="text-sm font-medium text-slate-800">New meeting processed</p><p class="text-xs text-slate-400 mt-0.5">Q4 Roadmap Alignment is ready • 2 min ago</p></div>
+        </div>
+      </div>
+      <div class="p-md hover:bg-slate-50 cursor-pointer transition-colors" onclick="navigateTo('tasks');toggleNotifications()">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-sm text-amber-600">priority_high</span></div>
+          <div><p class="text-sm font-medium text-slate-800">3 tasks overdue</p><p class="text-xs text-slate-400 mt-0.5">Review your task board • 1 hr ago</p></div>
+        </div>
+      </div>
+      <div class="p-md hover:bg-slate-50 cursor-pointer transition-colors" onclick="navigateTo('team');toggleNotifications()">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-sm text-emerald-600">person_add</span></div>
+          <div><p class="text-sm font-medium text-slate-800">New team member</p><p class="text-xs text-slate-400 mt-0.5">Jordan Kim joined your workspace • 3 hr ago</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="p-md text-center"><button onclick="toggleNotifications()" class="text-xs text-slate-400 hover:text-indigo-600">Close</button></div>
+  </div>
+
+</div><!-- /app-section -->
+
+</div><!-- /app-root -->
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<script>
+// ========== ANGULAR 21 SPA ROUTER SIMULATION ==========
+// In a real Angular 21 app this would be RouterModule with standalone components.
+// This simulates Angular's component-based routing with lifecycle hooks.
+
+let currentPage = null;
+let aiPanelOpen = false;
+let notifPanelOpen = false;
+
+// const APP_PAGES = ['dashboard','new-meeting','meeting-summary','tasks','email-preview','team','settings'];
+const APP_PAGES = ['dashboard','new-meeting','meeting-summary','tasks','team','settings'];
+const AUTH_PAGES = ['login','signup'];
+
+// Angular-like component lifecycle
+const componentHooks = {
+  dashboard: { onInit: initDashboard },
+  tasks: { onInit: initTasks },
+  'new-meeting': { onInit: initNewMeeting },
+  'meeting-summary': { onInit: initMeetingSummary },
+  settings: { onInit: () => setSettingsTab('profile') },
+  login: { onInit: () => {} },
+  signup: { onInit: () => {} }
+};
+
+function navigateTo(page) {
+  // Close panels
+  closeAllPanels();
+
+  // Hide all pages
+  [...APP_PAGES, ...AUTH_PAGES].forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if(el) el.style.display = 'none';
+  });
+
+  const isAuth = AUTH_PAGES.includes(page);
+  document.getElementById('auth-section').style.display = isAuth ? 'block' : 'none';
+  document.getElementById('app-section').style.display = isAuth ? 'none' : 'flex';
+
+  // Show target page
+  const target = document.getElementById('page-' + page);
+  if(target) {
+    target.style.display = 'block';
+    // Trigger page enter animation by re-adding class
+    target.classList.remove('page-enter');
+    void target.offsetWidth; // reflow
+    target.classList.add('page-enter');
+
+    // Scroll to top smoothly
+    const mainEl = document.querySelector('main');
+    if(mainEl) mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Update sidebar nav active state
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const activeNav = document.getElementById('nav-' + page);
+  if(activeNav) activeNav.classList.add('active');
+
+  currentPage = page;
+
+  // Call Angular-like ngOnInit
+  if(componentHooks[page] && componentHooks[page].onInit) {
+    setTimeout(componentHooks[page].onInit, 50);
+  }
+}
+
+// ========== COMPONENT INIT HOOKS (ngOnInit) ==========
+function initDashboard() {
+  // Animate progress bars
+  document.querySelectorAll('#page-dashboard .animate-grow').forEach(el => {
+    el.style.width = '0';
+    void el.offsetWidth;
+    el.style.transition = 'width 1.2s ease';
+    setTimeout(() => { el.style.width = el.dataset.w || el.className.match(/w-\[(\d+)%\]/) ? null : null; }, 100);
+  });
+  // Animate stat counters
+  animateCounter('stat-meetings', 0, 128, 1200);
+}
+
+function initTasks() {
+  // Reset and re-trigger kanban card animations
+  document.querySelectorAll('#page-tasks .kanban-card').forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(12px)';
+    setTimeout(() => {
+      card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+      card.style.opacity = '';
+      card.style.transform = '';
+    }, i * 60);
+  });
+}
+
+function initNewMeeting() {
+  document.getElementById('upload-idle').style.display = 'flex';
+  document.getElementById('upload-success').style.display = 'none';
+  document.getElementById('transcript-input').value = '';
+  document.getElementById('meeting-title').value = '';
+}
+
+function initMeetingSummary() {}
+
+// ========== AUTH HANDLERS ==========
+function handleLogin() {
+  const email = document.getElementById('login-email').value;
+  if(!email) { showToast('Please enter your email address.'); return; }
+  showToast('Signing in... Welcome back!');
+  setTimeout(() => navigateTo('dashboard'), 800);
+}
+
+function handleSignup() {
+  showToast('Account created! Redirecting...');
+  setTimeout(() => navigateTo('dashboard'), 800);
+}
+
+function selectPlan(btn, plan) {
+  document.querySelectorAll('.plan-btn').forEach(b => {
+    b.classList.remove('border-2','border-primary-container','bg-primary-container/10');
+    b.classList.add('border','border-slate-100');
+  });
+  btn.classList.remove('border','border-slate-100');
+  btn.classList.add('border-2','border-primary-container','bg-primary-container/10');
+  showToast(plan === 'pro' ? 'Pro plan selected!' : 'Free plan selected.');
+}
+
+// ========== FORM INTERACTIONS ==========
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if(input.type === 'password') {
+    input.type = 'text';
+    btn.querySelector('.material-symbols-outlined').textContent = 'visibility_off';
+  } else {
+    input.type = 'password';
+    btn.querySelector('.material-symbols-outlined').textContent = 'visibility';
+  }
+}
+
+function selectAnalysis(btn) {
+  document.querySelectorAll('.analysis-btn').forEach(b => {
+    b.classList.remove('border-2','border-primary-container','bg-primary-container/10');
+    b.classList.add('border','border-slate-100');
+    b.querySelector('.material-symbols-outlined').parentElement.className = 'p-2 bg-slate-50 rounded-lg text-slate-400';
+  });
+  btn.classList.remove('border','border-slate-100');
+  btn.classList.add('border-2','border-primary-container','bg-primary-container/10');
+  btn.querySelector('.material-symbols-outlined').parentElement.className = 'p-2 bg-white rounded-lg text-primary shadow-sm';
+}
+
+function handleFileDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if(file) showFileUploaded(file.name);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if(file) showFileUploaded(file.name);
+}
+
+function showFileUploaded(name) {
+  document.getElementById('upload-idle').style.display = 'none';
+  document.getElementById('upload-success').style.display = 'flex';
+  document.getElementById('upload-filename').textContent = name;
+  document.getElementById('upload-zone').classList.remove('border-dashed','border-slate-200');
+  document.getElementById('upload-zone').classList.add('border-emerald-200','bg-emerald-50/20');
+  showToast('File "' + name + '" ready!');
+}
+
+function resetUpload() {
+  document.getElementById('upload-idle').style.display = 'flex';
+  document.getElementById('upload-success').style.display = 'none';
+  document.getElementById('upload-zone').classList.add('border-dashed','border-slate-200');
+  document.getElementById('upload-zone').classList.remove('border-emerald-200','bg-emerald-50/20');
+  document.getElementById('file-input').value = '';
+}
+
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('transcript-input').value = text;
+    showToast('Pasted from clipboard!');
+  } catch(e) {
+    document.getElementById('transcript-input').value = '[Speaker 1]: Good morning everyone, let\'s get started with today\'s agenda...\n[Speaker 2]: Thanks for setting this up. I want to review the Q4 milestones first.';
+    showToast('Sample transcript loaded!');
+  }
+}
+
+function processMeeting() {
+  const btn = document.getElementById('process-btn-text');
+  const title = document.getElementById('meeting-title').value || 'Untitled Meeting';
+  btn.textContent = 'Processing...';
+  btn.parentElement.disabled = true;
+  btn.parentElement.classList.add('opacity-75','cursor-not-allowed');
+  showToast('Processing "' + title + '"...');
+  setTimeout(() => {
+    btn.textContent = 'Process Meeting';
+    btn.parentElement.disabled = false;
+    btn.parentElement.classList.remove('opacity-75','cursor-not-allowed');
+    showToast('Meeting processed! Redirecting to summary...');
+    setTimeout(() => navigateTo('meeting-summary'), 700);
+  }, 2000);
+}
+
+function toggleActionItem(el) {
+  const icon = el.querySelector('.material-symbols-outlined');
+  const content = el.querySelector('.flex-1');
+  if(icon.textContent.trim() === 'radio_button_unchecked') {
+    icon.textContent = 'check_circle';
+    icon.classList.remove('text-slate-300');
+    icon.classList.add('text-emerald-500');
+    content.classList.add('opacity-60');
+    const title = content.querySelector('p');
+    if(title) title.classList.add('line-through');
+    showToast('Task marked complete!');
+  } else {
+    icon.textContent = 'radio_button_unchecked';
+    icon.classList.add('text-slate-300');
+    icon.classList.remove('text-emerald-500');
+    content.classList.remove('opacity-60');
+    const title = content.querySelector('p');
+    if(title) title.classList.remove('line-through');
+  }
+}
+
+// ========== EMAIL ==========
+function regenerateEmail() {
+  showToast('Regenerating email with AI...');
+  const textarea = document.getElementById('email-body');
+  textarea.style.opacity = '0.5';
+  setTimeout(() => {
+    textarea.style.opacity = '1';
+    textarea.value = textarea.value.replace('Hi team,', 'Hi all,').replace('Thanks for joining', 'Thank you for joining');
+    showToast('Email regenerated!');
+  }, 1200);
+}
+
+// ========== SETTINGS ==========
+function setSettingsTab(tab) {
+  document.querySelectorAll('.settings-tab').forEach(b => {
+    b.classList.remove('bg-indigo-50','text-indigo-700');
+    b.classList.add('text-slate-600');
+  });
+  event && event.target && event.target.closest('.settings-tab') && event.target.closest('.settings-tab').classList.add('bg-indigo-50','text-indigo-700');
+  showToast(tab.charAt(0).toUpperCase() + tab.slice(1) + ' settings selected');
+}
+
+// ========== AI PANEL ==========
+function toggleAIPanel() {
+  const panel = document.getElementById('ai-panel');
+  aiPanelOpen = !aiPanelOpen;
+  panel.style.display = aiPanelOpen ? 'block' : 'none';
+  if(aiPanelOpen) {
+    panel.classList.remove('anim-scale-in');
+    void panel.offsetWidth;
+    panel.classList.add('anim-scale-in');
+  }
+}
+
+const aiResponses = [
+  "I found 3 action items from your last meeting. Should I create tasks for them?",
+  "Your most productive meeting time is 10am–12pm based on your data.",
+  "I can draft a summary for your upcoming team sync. Want me to start?",
+  "Based on your calendar, Thursday 2pm is optimal for your team standup.",
+  "I've detected a recurring theme: API specs keep coming up. Want a dedicated doc?",
+];
+let aiIdx = 0;
+
+function sendAIMessage() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if(!msg) return;
+  const container = document.getElementById('ai-messages');
+  // User message
+  container.innerHTML += `<div class="flex gap-2 justify-end"><div class="bg-indigo-600 text-white rounded-xl rounded-tr-none p-3 text-xs max-w-[200px]">${msg}</div></div>`;
+  input.value = '';
+  // AI response
+  setTimeout(() => {
+    const resp = aiResponses[aiIdx % aiResponses.length]; aiIdx++;
+    container.innerHTML += `<div class="flex gap-2"><div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-xs text-indigo-600">smart_toy</span></div><div class="bg-slate-50 rounded-xl rounded-tl-none p-3 text-xs text-slate-700 flex-1">${resp}</div></div>`;
+    container.scrollTop = container.scrollHeight;
+  }, 600);
+  container.scrollTop = container.scrollHeight;
+}
+
+// ========== NOTIFICATIONS ==========
+function toggleNotifications() {
+  const panel = document.getElementById('notif-panel');
+  notifPanelOpen = !notifPanelOpen;
+  panel.style.display = notifPanelOpen ? 'block' : 'none';
+  if(notifPanelOpen) {
+    panel.classList.remove('anim-scale-in');
+    void panel.offsetWidth;
+    panel.classList.add('anim-scale-in');
+  }
+}
+
+function markAllRead() {
+  showToast('All notifications marked as read!');
+  const badge = document.querySelector('.badge-pulse');
+  if(badge && badge.textContent) badge.style.display = 'none';
+  toggleNotifications();
+}
+
+function closeAllPanels() {
+  document.getElementById('ai-panel').style.display = 'none';
+  document.getElementById('notif-panel').style.display = 'none';
+  aiPanelOpen = false;
+  notifPanelOpen = false;
+}
+
+// ========== SEARCH ==========
+function handleSearch(input) {
+  if(input.value.length > 2) {
+    showToast('Searching for "' + input.value + '"...');
+  }
+}
+
+// ========== TOAST ==========
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ========== COUNTER ANIMATION ==========
+function animateCounter(id, from, to, duration) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    el.textContent = Math.floor(from + (to - from) * easeOut(p));
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+// ========== CLOSE PANELS ON OUTSIDE CLICK ==========
+document.addEventListener('click', (e) => {
+  if(notifPanelOpen && !e.target.closest('#notif-panel') && !e.target.closest('button[onclick*="toggleNotifications"]')) {
+    toggleNotifications();
+  }
+});
+
+// ========== SCROLL ANIMATIONS (IntersectionObserver = Angular-like Scroll Directive) ==========
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        entry.target.classList.add('anim-fade-up');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.kanban-card, .bg-white.rounded-xl').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+// ========== APP BOOTSTRAP (Angular bootstrapApplication()) ==========
+document.addEventListener('DOMContentLoaded', () => {
+  // Start at login page
+  navigateTo('login');
+  setTimeout(initScrollAnimations, 500);
+});
+</script>
+<script>
+// =====================================================
+// MeetlyAI REAL Laravel Frontend Integration
+// Replace-safe patch. This overrides the fake demo functions.
+// Backend must be running at: http://127.0.0.1:8000
+// =====================================================
+
+var API_BASE_URL = "http://127.0.0.1:8000/api";
+var selectedMeetingFile = null;
+
+// ---------- Auth storage ----------
+function getAuthToken() {
+  return localStorage.getItem("meetly_token") || localStorage.getItem("token");
+}
+
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("meetly_user") || "null");
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveAuthData(data) {
+  const token =
+    data.token ||
+    data.access_token ||
+    data.plainTextToken ||
+    data?.data?.token ||
+    data?.data?.access_token;
+
+  const user =
+    data.user ||
+    data?.data?.user ||
+    data?.data ||
+    null;
+
+  if (token) {
+    localStorage.setItem("meetly_token", token);
+    localStorage.setItem("token", token);
+  }
+
+  if (user && typeof user === "object") {
+    localStorage.setItem("meetly_user", JSON.stringify(user));
+  }
+}
+
+function clearAuthData() {
+  localStorage.removeItem("meetly_token");
+  localStorage.removeItem("token");
+  localStorage.removeItem("meetly_user");
+}
+
+// ---------- API ----------
+function authHeaders(extra = {}) {
+  const token = getAuthToken();
+  return {
+    "Accept": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    ...extra
+  };
+}
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: authHeaders(options.headers || {})
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = {};
+  }
+
+  console.log("API:", path, response.status, data);
+
+  if (!response.ok) {
+    const validationErrors = data.errors
+      ? Object.values(data.errors).flat().join(" ")
+      : "";
+    throw new Error(validationErrors || data.message || data.error || `Request failed (${response.status})`);
+  }
+
+  return data;
+}
+
+function extractList(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response.data)) return response.data;
+  if (response.data && Array.isArray(response.data.data)) return response.data.data;
+  if (Array.isArray(response.meetings)) return response.meetings;
+  if (Array.isArray(response.tasks)) return response.tasks;
+  if (Array.isArray(response.users)) return response.users;
+  return [];
+}
+
+function safeText(value, fallback = "") {
+  if (value === null || value === undefined || value === "") return fallback;
+  return String(value);
+}
+
+function initialsFrom(nameOrEmail) {
+  const text = safeText(nameOrEmail, "U").trim();
+  if (text.includes("@")) return text[0].toUpperCase();
+  const parts = text.split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] || "U").toUpperCase() + (parts[1]?.[0] || "").toUpperCase();
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  try {
+    return new Date(value).toLocaleString();
+  } catch (e) {
+    return value;
+  }
+}
+
+// ---------- Small DOM helpers ----------
+function setupSignupInputIds() {
+  const signupPage = document.getElementById("page-signup");
+  if (!signupPage) return;
+
+  const inputs = signupPage.querySelectorAll("input");
+  if (inputs[0]) inputs[0].id = "signup-first-name";
+  if (inputs[1]) inputs[1].id = "signup-last-name";
+  if (inputs[2]) inputs[2].id = "signup-email";
+  if (inputs[3]) inputs[3].id = "signup-pass";
+}
+
+function setLoginDefaults() {
+  const email = document.getElementById("login-email");
+  const pass = document.getElementById("login-pass");
+
+  // These are only defaults for local testing. You can delete/change them.
+  if (email && (!email.value || email.value.includes("MeetlyAI.ai"))) {
+    email.value = "tolbaasmaa0@gmail.com";
+  }
+
+  if (pass && (!pass.value || pass.value.includes("•"))) {
+    pass.value = "Asmaa12345";
+  }
+}
+
+function updateUserUI(user) {
+  if (!user || typeof user !== "object") return;
+
+  const fullName =
+    user.name ||
+    user.display_name ||
+    `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+    user.email ||
+    "User";
+
+  const firstName = fullName.split(" ")[0] || "User";
+  const initials = initialsFrom(fullName);
+
+  document.querySelectorAll(".w-8.h-8.rounded-full.bg-indigo-100").forEach(el => {
+    el.textContent = initials;
+  });
+
+  document.querySelectorAll("p").forEach(p => {
+    if (p.textContent.trim() === "Sarah Jenkins") p.textContent = fullName;
+  });
+
+  const hello = document.querySelector("#page-dashboard h2");
+  if (hello) hello.textContent = `Hello, ${firstName}`;
+}
+
+function ensureMeetingsContainer() {
+  let container = document.getElementById("meetings-list");
+  if (container) return container;
+
+  const headings = [...document.querySelectorAll("#page-dashboard h3")];
+  const recentHeading = headings.find(h => h.textContent.trim() === "Recent Meetings");
+  const card = recentHeading?.closest(".bg-white");
+  const oldList = card?.querySelector(".divide-y");
+  if (oldList) {
+    oldList.id = "meetings-list";
+    oldList.innerHTML = "";
+    container = oldList;
+  }
+  return container;
+}
+
+function ensureTasksContainer() {
+  let container = document.getElementById("real-tasks-board");
+  if (container) return container;
+
+  const page = document.getElementById("page-tasks");
+  if (!page) return null;
+
+  const oldBoard = page.querySelector(".flex.gap-gutter.overflow-x-auto");
+  container = document.createElement("div");
+  container.id = "real-tasks-board";
+  container.className = "grid grid-cols-1 md:grid-cols-3 gap-gutter pb-lg";
+
+  if (oldBoard) {
+    oldBoard.replaceWith(container);
+  } else {
+    page.querySelector("section")?.appendChild(container);
+  }
+
+  return container;
+}
+
+function ensureTeamContainer() {
+  let container = document.getElementById("real-team-list");
+  if (container) return container;
+
+  const page = document.getElementById("page-team");
+  if (!page) return null;
+
+  const grids = [...page.querySelectorAll(".grid")];
+  const cardGrid = grids.find(g => g.querySelector(".group.p-gutter.rounded-xl"));
+  if (cardGrid) {
+    cardGrid.id = "real-team-list";
+    cardGrid.innerHTML = "";
+    container = cardGrid;
+  }
+  return container;
+}
+
+// ---------- Auth handlers ----------
+async function handleLogin() {
+  const email = document.getElementById("login-email")?.value.trim();
+  const password = document.getElementById("login-pass")?.value;
+
+  if (!email || !password) {
+    showToast("Please enter email and password.");
+    return;
+  }
+
+  try {
+    showToast("Signing in...");
+
+    const data = await apiRequest("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    saveAuthData(data);
+    updateUserUI(getStoredUser());
+    showToast("Login successful!");
+    navigateTo("dashboard");
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Login failed");
+  }
+}
+
+async function handleSignup() {
+  setupSignupInputIds();
+
+  const firstName = document.getElementById("signup-first-name")?.value.trim() || "";
+  const lastName = document.getElementById("signup-last-name")?.value.trim() || "";
+  const email = document.getElementById("signup-email")?.value.trim() || "";
+  const password = document.getElementById("signup-pass")?.value || "";
+  const name = `${firstName} ${lastName}`.trim();
+
+  if (!name || !email || !password) {
+    showToast("Please fill first name, last name, email, and password.");
+    return;
+  }
+
+  try {
+    showToast("Creating account...");
+
+    const data = await apiRequest("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        first_name: firstName,
+        last_name: lastName,
+        display_name: name,
+        email,
+        password,
+        password_confirmation: password
+      })
+    });
+
+    saveAuthData(data);
+    updateUserUI(getStoredUser());
+    showToast("Account created successfully!");
+    navigateTo("dashboard");
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Signup failed");
+  }
+}
+
+async function handleLogout() {
+  try {
+    if (getAuthToken()) {
+      await apiRequest("/auth/logout", { method: "POST" });
+    }
+  } catch (error) {
+    console.warn("Logout API failed:", error.message);
+  }
+
+  clearAuthData();
+  showToast("Logged out");
+  navigateTo("login");
+}
+
+// ---------- Real dashboard ----------
+async function loadDashboardData() {
+  try {
+    const dashboard = await apiRequest("/user/dashboard").catch(() => ({}));
+    const meetingsRes = await apiRequest("/meetings").catch(() => ({ data: [] }));
+    const tasksRes = await apiRequest("/tasks").catch(() => ({ data: [] }));
+    const emailDraftsRes = await apiRequest("/email-drafts").catch(() => ({ data: [] }));
+
+    const meetings = extractList(meetingsRes);
+    const tasks = extractList(tasksRes);
+    const drafts = extractList(emailDraftsRes);
+
+    const statCards = document.querySelectorAll("#page-dashboard .grid .text-h3.font-h3");
+    if (statCards[0]) statCards[0].textContent = dashboard.total_meetings ?? meetingsRes.total ?? meetings.length;
+    if (statCards[1]) statCards[1].textContent = dashboard.total_tasks ?? tasksRes.total ?? tasks.length;
+    if (statCards[2]) statCards[2].textContent = dashboard.total_email_drafts ?? emailDraftsRes.total ?? drafts.length;
+
+    const statMeetings = document.getElementById("stat-meetings");
+    if (statMeetings) statMeetings.textContent = dashboard.total_meetings ?? meetingsRes.total ?? meetings.length;
+
+    renderMeetingsList(meetings);
+    renderPriorityTasks(tasks);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Could not load dashboard data");
+  }
+}
+
+function renderMeetingsList(meetings) {
+  const container = ensureMeetingsContainer();
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!meetings.length) {
+    container.innerHTML = `
+      <div class="p-md text-center text-slate-400">
+        No meetings yet. Create your first meeting from the New Meeting page.
+      </div>
+    `;
+    return;
+  }
+
+  meetings.slice(0, 5).forEach(meeting => {
+    const ownerName = meeting.owner?.display_name || meeting.owner?.name || meeting.owner?.email || "Host";
+    const status = safeText(meeting.status, "ready");
+    const date = formatDate(meeting.created_at);
+
+    const item = document.createElement("div");
+    item.className = "p-md hover:bg-slate-50 transition-colors cursor-pointer group flex items-center gap-4";
+    item.onclick = () => {
+  localStorage.setItem("selected_meeting_id", meeting.id);
+  openMeetingSummary(meeting.id);
+};
+
+    item.innerHTML = `
+      <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-500 flex-shrink-0">
+        <span class="material-symbols-outlined">groups</span>
+      </div>
+      <div class="flex-1">
+        <h4 class="font-manrope font-semibold text-slate-800">${safeText(meeting.title, "Untitled Meeting")}</h4>
+        <p class="text-body-sm text-slate-500">${date} • ${status}</p>
+      </div>
+      <div class="hidden md:flex -space-x-2">
+        <div class="w-7 h-7 rounded-full border-2 border-white bg-indigo-200 flex items-center justify-center text-[9px] font-bold text-indigo-700">${initialsFrom(ownerName)}</div>
+      </div>
+      <span class="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">chevron_right</span>
+    `;
+
+    container.appendChild(item);
+  });
+}
+
+function renderPriorityTasks(tasks) {
+  const card = [...document.querySelectorAll("#page-dashboard h3")]
+    .find(h => h.textContent.includes("Upcoming Priorities"))
+    ?.closest(".bg-indigo-600");
+
+  if (!card) return;
+
+  const list = card.querySelector(".mt-8.space-y-4");
+  if (!list) return;
+
+  const important = tasks.slice(0, 3);
+  list.innerHTML = "";
+
+  if (!important.length) {
+    list.innerHTML = `<p class="text-indigo-100 text-sm">No tasks yet. Create a meeting or add tasks first.</p>`;
+    return;
+  }
+
+  important.forEach(task => {
+    const div = document.createElement("div");
+    div.className = "bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 hover:bg-white/20 transition-colors cursor-pointer";
+    div.onclick = () => navigateTo("tasks");
+    div.innerHTML = `
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-indigo-200">priority_high</span>
+        <div>
+          <p class="text-body-sm font-semibold">${safeText(task.title, "Untitled Task")}</p>
+          <p class="text-[12px] text-indigo-200">${safeText(task.status, "todo")} • ${safeText(task.priority, "normal")}</p>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ---------- Meetings ----------
+async function processMeeting() {
+  const btnText = document.getElementById("process-btn-text");
+  const button = btnText?.parentElement;
+  const title = document.getElementById("meeting-title")?.value.trim();
+  const transcript = document.getElementById("transcript-input")?.value.trim();
+
+  if (!title) {
+    showToast("Please add a meeting title.");
+    return;
+  }
+
+  if (!transcript && !selectedMeetingFile) {
+    showToast("Please paste a transcript or upload an audio file.");
+    return;
+  }
+
+  try {
+    if (btnText) btnText.textContent = "Processing...";
+    if (button) {
+      button.disabled = true;
+      button.classList.add("opacity-75", "cursor-not-allowed");
+    }
+
+    let data;
+
+    if (selectedMeetingFile) {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("transcript", transcript || "");
+      formData.append("audio", selectedMeetingFile);
+
+      data = await apiRequest("/meetings", {
+        method: "POST",
+        body: formData
+      });
+    } else {
+      data = await apiRequest("/meetings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          transcript,
+          analysis_profile: getSelectedAnalysisProfile()
+        })
+      });
+    }
+
+    const meeting = data.meeting || data.data || data;
+    localStorage.setItem("last_meeting", JSON.stringify(meeting));
+    localStorage.setItem("selected_meeting_id", meeting.id || "");
+
+    showToast("Meeting created successfully!");
+    await loadDashboardData();
+    renderMeetingSummary(meeting);
+    setTimeout(() => navigateTo("meeting-summary"), 500);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Could not create meeting");
+  } finally {
+    if (btnText) btnText.textContent = "Process Meeting";
+    if (button) {
+      button.disabled = false;
+      button.classList.remove("opacity-75", "cursor-not-allowed");
+    }
+  }
+}
+
+function getSelectedAnalysisProfile() {
+  const selected = document.querySelector(".analysis-btn.selected");
+  const text = selected?.innerText?.toLowerCase() || "";
+  if (text.includes("action")) return "action_oriented";
+  if (text.includes("verbatim")) return "verbatim_archive";
+  return "executive_summary";
+}
+
+function loadSelectedMeetingDetails() {
+  if (selectedMeetingId) {
+    document.getElementById("meeting-summary-picker").style.display = "none";
+    loadMeetingSummary(selectedMeetingId);
+    return;
+  }
+
+  document.getElementById("summary-title").textContent = "Select a meeting";
+  document.getElementById("summary-date").textContent = "";
+  document.getElementById("summary-status").textContent = "-";
+  document.getElementById("summary-word-count").textContent = "0";
+  document.getElementById("summary-transcript").textContent =
+    "Choose a meeting from the list below.";
+  document.getElementById("ai-summary-content").textContent =
+    "No meeting selected.";
+  renderActionItems([]);
+
+  document.getElementById("meeting-summary-picker").style.display = "block";
+  loadMeetingSummaryPicker();
+}
+
+async function loadMeetingSummaryPicker() {
+  const list = document.getElementById("meeting-summary-picker-list");
+  if (!list) return;
+
+  list.innerHTML = `<div class="text-slate-400 text-sm py-3">Loading meetings...</div>`;
+
+  try {
+    const res = await apiRequest("/meetings");
+    const meetings = extractList(res);
+
+    if (!meetings.length) {
+      list.innerHTML = `
+        <div class="text-slate-400 text-sm py-3">
+          No meetings yet. Create one from the New Meeting page.
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = "";
+
+    meetings.forEach(meeting => {
+      const row = document.createElement("div");
+      row.className = "py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded-lg px-2";
+
+      row.onclick = () => {
+        selectedMeetingId = meeting.id;
+        document.getElementById("meeting-summary-picker").style.display = "none";
+        loadMeetingSummary(meeting.id);
+      };
+
+      row.innerHTML = `
+        <div>
+          <p class="font-semibold text-slate-800">
+            ${safeText(meeting.title || "Untitled Meeting")}
+          </p>
+          <p class="text-xs text-slate-400">
+            ${meeting.created_at ? formatDate(meeting.created_at) : ""}
+          </p>
+        </div>
+        <span class="material-symbols-outlined text-slate-300">chevron_right</span>
+      `;
+
+      list.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = `
+      <div class="text-red-500 text-sm py-3">
+        ${error.message || "Could not load meetings."}
+      </div>
+    `;
+  }
+}
+
+function renderMeetingSummary(meeting) {
+  if (!meeting || typeof meeting !== "object") return;
+
+  const page = document.getElementById("page-meeting-summary");
+  if (!page) return;
+
+  const title = page.querySelector("h2");
+  if (title) title.textContent = safeText(meeting.title, "Meeting Summary");
+
+  const summaryParagraphs = page.querySelectorAll(".bg-white.rounded-xl.custom-shadow.p-lg p.text-body-md");
+  if (summaryParagraphs[0]) {
+    summaryParagraphs[0].textContent =
+      meeting.ai_summary ||
+      "AI-generated summary will appear here after processing.";
+  }
+  if (summaryParagraphs[1]) {
+    summaryParagraphs[1].textContent =
+      meeting.sentiment ? `Sentiment: ${meeting.sentiment}` : "Meeting data saved successfully.";
+  }
+
+  const transcriptBox = page.querySelector(".max-h-64.overflow-y-auto");
+  if (transcriptBox) {
+    transcriptBox.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600 flex-shrink-0 mt-0.5">AI</div>
+        <div>
+          <p class="text-[11px] text-slate-400 mb-1">Transcript</p>
+          <p class="text-sm text-slate-700 whitespace-pre-wrap">${safeText(meeting.transcript, "No transcript saved.")}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  const statsCard = [...page.querySelectorAll("h4")]
+    .find(h => h.textContent.trim() === "Meeting Stats")
+    ?.closest(".bg-white");
+
+  if (statsCard) {
+    const rows = statsCard.querySelector(".space-y-3");
+    if (rows) {
+      rows.innerHTML = `
+        <div class="flex justify-between text-sm"><span class="text-slate-500">Duration</span><span class="font-semibold text-slate-800">${safeText(meeting.duration_formatted || meeting.duration_seconds, "N/A")}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-500">Status</span><span class="font-semibold text-slate-800">${safeText(meeting.status, "ready")}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-500">Action items</span><span class="font-semibold text-indigo-600">${meeting.tasks?.length || 0}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-500">Sentiment</span><span class="font-semibold text-emerald-600">${safeText(meeting.sentiment, "N/A")}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-500">Word count</span><span class="font-semibold text-slate-800">${meeting.word_count || 0}</span></div>
+      `;
+    }
+  }
+}
+
+// ---------- Tasks ----------
+async function loadTasksBoard() {
+  const container = ensureTasksContainer();
+  if (!container) return;
+
+  container.innerHTML = `<div class="col-span-full text-slate-400">Loading tasks...</div>`;
+
+  try {
+    let data = await apiRequest("/tasks/board").catch(() => null);
+    let tasks = [];
+
+    if (data) {
+      if (Array.isArray(data)) tasks = data;
+      else if (Array.isArray(data.tasks)) tasks = data.tasks;
+      else if (data.todo || data.in_progress || data.done) {
+        tasks = [
+          ...(data.todo || []),
+          ...(data.in_progress || []),
+          ...(data.review || []),
+          ...(data.done || [])
+        ];
+      } else tasks = extractList(data);
+    }
+
+    if (!tasks.length) {
+      const fallback = await apiRequest("/tasks").catch(() => ({ data: [] }));
+      tasks = extractList(fallback);
+    }
+
+    renderTasks(tasks);
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = `<div class="col-span-full text-red-500">${error.message || "Could not load tasks"}</div>`;
+  }
+}
+
+function renderTasks(tasks) {
+  const container = ensureTasksContainer();
+  if (!container) return;
+
+  const groups = {
+    todo: [],
+    in_progress: [],
+    done: []
+  };
+
+  tasks.forEach(task => {
+    const status = (task.status || "todo").toLowerCase().replaceAll("-", "_");
+    if (status.includes("done") || status.includes("complete")) groups.done.push(task);
+    else if (status.includes("progress") || status.includes("review")) groups.in_progress.push(task);
+    else groups.todo.push(task);
+  });
+
+  const columns = [
+    ["todo", "Backlog", "bg-slate-300"],
+    ["in_progress", "In Progress", "bg-indigo-400"],
+    ["done", "Done", "bg-emerald-400"]
+  ];
+
+  container.innerHTML = "";
+
+  columns.forEach(([key, label, dotClass]) => {
+    const col = document.createElement("div");
+    col.className = "flex flex-col gap-md min-w-[280px]";
+    col.innerHTML = `
+      <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full ${dotClass}"></span>
+          <h4 class="font-manrope font-semibold text-slate-600 text-sm">${label}</h4>
+          <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">${groups[key].length}</span>
+        </div>
+      </div>
+    `;
+
+    if (!groups[key].length) {
+      col.innerHTML += `<div class="bg-white p-md rounded-xl custom-shadow text-slate-400 text-sm">No tasks</div>`;
+    }
+
+    groups[key].forEach(task => {
+      const assignee =
+        task.assignee?.display_name ||
+        task.assignee?.name ||
+        task.assignee?.email ||
+        "Unassigned";
+
+      const card = document.createElement("div");
+      card.className = "kanban-card bg-white p-md rounded-xl custom-shadow cursor-pointer";
+      card.innerHTML = `
+        <p class="text-sm font-semibold text-slate-800 mb-2">${safeText(task.title, "Untitled Task")}</p>
+        <p class="text-xs text-slate-400 mb-3">${safeText(task.description, "")}</p>
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] text-slate-400">${safeText(task.priority, "normal")}</span>
+          <span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-600" title="${assignee}">${initialsFrom(assignee)}</span>
+        </div>
+      `;
+      col.appendChild(card);
+    });
+
+    container.appendChild(col);
+  });
+}
+
+// ---------- Team ----------
+async function loadTeamData() {
+  const container = document.getElementById("team-members-list");
+  if (!container) return;
+
+  container.innerHTML = `<div class="col-span-full text-slate-400">Loading team...</div>`;
+
+  try {
+    const data = await apiRequest("/team");
+    const users = extractList(data);
+
+    const totalEl = document.getElementById("team-total-count");
+    const activeEl = document.getElementById("team-active-count");
+    const newEl = document.getElementById("team-new-count");
+    const pendingEl = document.getElementById("team-pending-count");
+    const subtitleEl = document.getElementById("team-subtitle");
+
+    const departments = new Set(users.map(u => u.department).filter(Boolean));
+
+    if (totalEl) totalEl.textContent = users.length;
+    if (activeEl) activeEl.textContent = users.length;
+    if (newEl) newEl.textContent = "0";
+    if (pendingEl) pendingEl.textContent = "0";
+
+    if (subtitleEl) {
+      const deptCount = departments.size || 1;
+      subtitleEl.textContent = `${users.length} members across ${deptCount} department${deptCount > 1 ? "s" : ""}`;
+    }
+
+    if (!users.length) {
+      container.innerHTML = `<div class="col-span-full text-slate-400">No team members found.</div>`;
+      return;
+    }
+
+    container.innerHTML = "";
+
+    users.forEach((user, index) => {
+      const fullName =
+        user.display_name ||
+        user.name ||
+        `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+        user.email ||
+        "User";
+
+      const role = user.job_title || user.role || "member";
+      const department = user.department || "General";
+      const plan = user.plan || "free";
+      const email = user.email || "";
+
+      const card = document.createElement("div");
+      card.className = `bg-white group p-gutter rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden anim-fade-up delay-${Math.min(index + 1, 5)}`;
+
+      card.innerHTML = `
+        <div class="absolute top-0 right-0 p-sm opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="showToast('Member options...')" class="p-xs hover:bg-slate-50 rounded-lg text-slate-400">
+            <span class="material-symbols-outlined text-sm">more_vert</span>
+          </button>
+        </div>
+
+        <div class="flex items-start gap-md mb-md">
+          <div class="relative">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg">
+              ${initialsFrom(fullName)}
+            </div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white"></span>
+          </div>
+
+          <div>
+            <h4 class="font-h3 text-body-lg text-slate-800">${safeText(fullName)}</h4>
+            <p class="text-slate-500 text-sm">${safeText(role)}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-xs mb-md">
+          <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-medium rounded-full">
+            ${safeText(department)}
+          </span>
+          <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-full">
+            ${safeText(plan)}
+          </span>
+        </div>
+
+        <div class="pt-md border-t border-slate-50 flex items-center justify-between text-slate-400 text-[12px]">
+          <span class="truncate">${safeText(email)}</span>
+          <button onclick="showToast('Viewing ${safeText(fullName)} profile...')" class="hover:text-indigo-500 transition-colors text-xs font-medium">
+            View →
+          </button>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = `<div class="col-span-full text-red-500">${error.message || "Could not load team"}</div>`;
+  }
+}
+
+// ---------- File upload handlers ----------
+function handleFileDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    selectedMeetingFile = file;
+    showFileUploaded(file.name);
+  }
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) {
+    selectedMeetingFile = file;
+    showFileUploaded(file.name);
+  }
+}
+
+const previousResetUpload = typeof resetUpload === "function" ? resetUpload : null;
+resetUpload = function() {
+  selectedMeetingFile = null;
+  if (previousResetUpload) previousResetUpload();
+};
+
+// ---------- Navigation patches ----------
+const originalNavigateTo = typeof navigateTo === "function" ? navigateTo : null;
+
+navigateTo = function(page) {
+  if (!getAuthToken() && !["login", "signup"].includes(page)) {
+    showToast("Please login first.");
+    page = "login";
+  }
+
+  if (originalNavigateTo) {
+    originalNavigateTo(page);
+  }
+
+  setTimeout(() => {
+    updateUserUI(getStoredUser());
+
+    if (page === "dashboard") loadDashboardData();
+    if (page === "tasks") loadTasksBoard();
+    if (page === "team") loadTeamData();
+    if (page === "meeting-summary") loadSelectedMeetingDetails();
+  }, 80);
+};
+
+const originalInitDashboard = typeof initDashboard === "function" ? initDashboard : null;
+initDashboard = function() {
+  if (originalInitDashboard) originalInitDashboard();
+  updateUserUI(getStoredUser());
+  if (getAuthToken()) loadDashboardData();
+};
+
+const originalInitTasks = typeof initTasks === "function" ? initTasks : null;
+initTasks = function() {
+  if (originalInitTasks) originalInitTasks();
+  if (getAuthToken()) loadTasksBoard();
+};
+
+const originalInitMeetingSummary = typeof initMeetingSummary === "function" ? initMeetingSummary : null;
+initMeetingSummary = function() {
+  if (originalInitMeetingSummary) originalInitMeetingSummary();
+  loadSelectedMeetingDetails();
+};
+
+function patchLogoutButtons() {
+  document.querySelectorAll('button[title="Sign out"]').forEach(btn => {
+    btn.onclick = handleLogout;
+  });
+}
+
+// ---------- Bootstrap ----------
+window.addEventListener("DOMContentLoaded", () => {
+  setupSignupInputIds();
+  setLoginDefaults();
+  patchLogoutButtons();
+  updateUserUI(getStoredUser());
+
+  if (getAuthToken()) {
+    setTimeout(() => navigateTo("dashboard"), 100);
+  } else {
+    setTimeout(() => navigateTo("login"), 100);
+  }
+});
+
+
+
+let selectedMeetingId = null;
+let selectedMeetingTranscript = "";
+
+function openMeetingSummary(meetingId) {
+  selectedMeetingId = meetingId;
+  navigateTo("meeting-summary");
+  loadMeetingSummary(meetingId);
+}
+
+async function loadMeetingSummary(meetingId) {
+  try {
+    const res = await apiRequest(`/meetings/${meetingId}`);
+    const meeting = res.meeting || res.data || res;
+
+    selectedMeetingId = meeting.id || meetingId;
+    selectedMeetingTranscript = meeting.transcript || "";
+
+    document.getElementById("summary-title").textContent =
+      meeting.title || "Untitled Meeting";
+
+    document.getElementById("summary-date").textContent =
+      meeting.created_at ? formatDate(meeting.created_at) : "";
+
+    document.getElementById("summary-status").textContent =
+      meeting.status || "Saved";
+
+    document.getElementById("summary-transcript").textContent =
+      selectedMeetingTranscript || "No transcript saved for this meeting.";
+
+    document.getElementById("summary-word-count").textContent =
+      meeting.word_count ||
+      (selectedMeetingTranscript ? selectedMeetingTranscript.trim().split(/\s+/).length : 0);
+
+    const summaryText = meeting.ai_summary || meeting.summary || "";
+
+    document.getElementById("ai-summary-content").textContent =
+      summaryText && !summaryText.toLowerCase().includes("will appear here")
+        ? summaryText
+        : "No AI summary generated yet.";
+
+    const tasks = meeting.tasks || meeting.action_items || [];
+    renderActionItems(tasks);
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Could not load meeting summary.");
+  }
+}
+
+function renderActionItems(tasks) {
+  const container = document.getElementById("action-items-list");
+  const countEl = document.getElementById("summary-action-count");
+
+  if (!container) return;
+
+  if (countEl) countEl.textContent = tasks.length || 0;
+
+  if (!tasks.length) {
+    container.innerHTML = `
+      <div class="text-slate-400 text-sm">
+        No action items generated yet.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  tasks.forEach(task => {
+    const title = task.title || task.description || task.task || "Untitled task";
+    const assignedTo = task.assigned_to_name || task.assigned_to || task.owner || "Unassigned";
+    const priority = task.priority || "normal";
+
+    const item = document.createElement("div");
+    item.className = "flex items-start gap-3 p-sm bg-surface-container-low rounded-xl hover:bg-slate-100 transition-colors";
+
+    item.innerHTML = `
+      <span class="material-symbols-outlined text-slate-300 mt-0.5 flex-shrink-0">
+        radio_button_unchecked
+      </span>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-slate-800">${safeText(title)}</p>
+        <div class="flex items-center gap-3 mt-1">
+          <span class="text-[11px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-medium">
+            ${safeText(priority)}
+          </span>
+          <span class="text-[11px] text-slate-400">
+            Assigned to ${safeText(assignedTo)}
+          </span>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(item);
+  });
+}
+
+async function generateMeetingAI() {
+  if (!selectedMeetingId) {
+    showToast("Please open a meeting first.");
+    return;
+  }
+
+  try {
+    showToast("Generating AI summary and tasks...");
+
+    const res = await apiRequest(`/meetings/${selectedMeetingId}/analyze`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const summary =
+      res.summary ||
+      res.ai_summary ||
+      res.data?.summary ||
+      "AI summary generated.";
+
+    const tasks =
+      res.tasks ||
+      res.action_items ||
+      res.data?.tasks ||
+      [];
+
+    document.getElementById("ai-summary-content").textContent = summary;
+    renderActionItems(tasks);
+
+    showToast("AI summary and tasks generated.");
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "AI generation endpoint is not ready.");
+  }
+}
+
+function copyMeetingTranscript() {
+  if (!selectedMeetingTranscript) {
+    showToast("No transcript to copy.");
+    return;
+  }
+
+  navigator.clipboard.writeText(selectedMeetingTranscript);
+  showToast("Transcript copied.");
+}
+</script>
+
+</body>
+</html>
