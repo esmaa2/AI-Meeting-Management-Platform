@@ -1,37 +1,47 @@
-# MeetlyAI - AI Meeting Management Platform
+# MeetlyAI
 
-## Overview
+MeetlyAI is an AI-powered meeting productivity platform that helps teams transform meeting transcripts into actionable insights.
 
-MeetlyAI is an AI-powered meeting management platform designed to help teams turn meetings into summaries, tasks, follow-ups, and actionable workflows.
+The platform enables users to create meetings, process transcripts, generate summaries, extract action items, manage tasks, collaborate with teams, and interact with an AI assistant.
 
-This repository contains a Laravel REST API backend and an Angular frontend structure.
+---
 
-> Note: The backend API is the main implemented part of this project. The Angular frontend structure is included, but the current frontend appears to be an initial Angular setup.
+## Key Features
 
-## Features
+### Authentication
+- User Registration
+- User Login
+- Secure Authentication
+- Password Recovery
+- Google Sign-In Support
 
-- User authentication with Laravel Sanctum
-- User profile and settings
-- Meeting management
-- Meeting attendees
-- AI meeting analysis endpoint
-- Task management
-- Kanban-style task board
-- Email drafts
-- Team invitations
-- Integrations
+### Meeting Management
+- Create Meetings
+- Store Meeting Transcripts
+- Manage Meeting Records
+- Meeting Dashboard
+
+### AI Features
+- AI Meeting Summaries
+- Action Item Extraction
+- Follow-Up Suggestions
+- AI Productivity Assistant
+
+### Team Collaboration
+- Team Management
+- Team Invitations
+- Shared Meeting Insights
+
+### User Management
+- Profile Settings
+- Display Name Management
 - Notifications
-- Seeded demo data
+- Integrations
+- Subscription Plans
+
+---
 
 ## Tech Stack
-
-### Backend
-- Laravel
-- PHP
-- Laravel Sanctum
-- Eloquent ORM
-- SQLite / MySQL
-- REST APIs
 
 ### Frontend
 - Angular
@@ -39,11 +49,47 @@ This repository contains a Laravel REST API backend and an Angular frontend stru
 - HTML
 - CSS
 
+### Backend
+- Laravel
+- PHP
+- Sanctum Authentication
+- REST APIs
+
+### Database
+- MySQL
+- SQLite (Development)
+
+---
+
 ## Project Structure
 
-```text
-MeetlyAI-Full-Project/
-├── backend-laravel/
-├── frontend-angular/
-├── screenshots/
-└── README.md
+frontend/
+backend/
+
+---
+
+## Screenshots
+
+### Login
+![Login](screenshots/login.png)
+
+### Register
+![Register](screenshots/register.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Create Meeting
+![Create Meeting](screenshots/create-meeting.png)
+
+### Settings
+![Settings](screenshots/settings.png)
+
+### AI Assistant
+![AI Assistant](screenshots/ai-assistant.png)
+
+---
+
+## Author
+
+Esma Yilmaz
